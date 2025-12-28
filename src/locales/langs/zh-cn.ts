@@ -303,6 +303,15 @@ const local: App.I18n.Schema = {
         desc5: 'Soybean 刚才把工作台页面随便写了一些，凑合能看了！'
       },
       creativity: '创意'
+    },
+    system: {
+      user: {
+        userName: '用户名称',
+        realName: '真实姓名',
+        phone: '电话',
+        role: '角色',
+        status: '状态'
+      }
     }
   },
   form: {

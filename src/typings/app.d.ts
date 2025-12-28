@@ -553,6 +553,15 @@ declare namespace App {
           };
           creativity: string;
         };
+        system: {
+          user: {
+            userName: string;
+            realName: string;
+            phone: string;
+            role: string;
+            status: string;
+          };
+        };
       };
       form: {
         required: string;

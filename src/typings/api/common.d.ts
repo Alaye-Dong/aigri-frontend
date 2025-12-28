@@ -24,12 +24,12 @@ declare namespace Api {
     type CommonSearchParams = Pick<Common.PaginatingCommonParams, 'current' | 'size'>;
 
     /**
-     * enable status
+     * 启用状态
      *
-     * - "1": enabled
-     * - "2": disabled
+     * - "0": 正常
+     * - "1": 停用
      */
-    type EnableStatus = '1' | '2';
+    type EnableStatus = '0' | '1';
 
     /** common record */
     type CommonRecord<T = any> = {

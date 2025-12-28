@@ -307,6 +307,15 @@ const local: App.I18n.Schema = {
         desc5: 'Soybean just wrote some of the workbench pages casually, and it was enough to see!'
       },
       creativity: 'Creativity'
+    },
+    system: {
+      user: {
+        userName: 'User Name',
+        realName: 'Real Name',
+        phone: 'Phone',
+        role: 'Role',
+        status: 'Status'
+      }
     }
   },
   form: {
