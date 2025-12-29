@@ -46,7 +46,16 @@ type Model = Api.System.UserOperateParams;
 
 const model = ref<Model>(createDefaultModel());
 
-const roleOptions = ref<CommonType.Option<CommonType.IdType>[]>([]);
+const roleOptions = [
+  {
+    label: '普通用户',
+    value: 'user'
+  },
+  {
+    label: '管理员',
+    value: 'admin'
+  }
+];
 
 function createDefaultModel(): Model {
   return {
@@ -168,12 +177,11 @@ watch(visible, () => {
             />
           </NFormItem>
 
-          <NFormItem :label="'角色'" path="roleIds">
+          <NFormItem :label="'角色'" path="role">
             <NSelect
               v-model:value="model.role"
               :loading="loading"
               :options="roleOptions"
-              multiple
               clearable
               placeholder="请选择角色"
             />
