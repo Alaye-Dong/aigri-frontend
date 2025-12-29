@@ -19,6 +19,7 @@ const local: App.I18n.Schema = {
     columnSetting: '列设置',
     config: '配置',
     confirm: '确认',
+    save: '保存',
     delete: '删除',
     deleteSuccess: '删除成功',
     confirmDelete: '确认删除吗？',

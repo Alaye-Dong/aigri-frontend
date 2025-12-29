@@ -8,3 +8,38 @@ export function fetchGetUserList(params?: Api.System.UserSearchParams) {
     params
   });
 }
+
+/** 新增用户信息 */
+export function fetchCreateUser(data: Api.System.UserOperateParams) {
+  return request<boolean>({
+    url: '/system/user',
+    method: 'post',
+    data
+  });
+}
+
+/** 修改用户信息 */
+export function fetchUpdateUser(data: Api.System.UserOperateParams) {
+  return request<boolean>({
+    url: '/system/user',
+    method: 'put',
+    data
+  });
+}
+
+/** 修改用户状态 */
+export function fetchUpdateUserStatus(data: Api.System.UserOperateParams) {
+  return request<boolean>({
+    url: '/system/user/changeStatus',
+    method: 'put',
+    data
+  });
+}
+
+/** 根据用户编号获取详细信息 */
+export function fetchGetUserInfo(userId?: CommonType.IdType) {
+  return request<Api.System.User>({
+    url: `/system/user/${userId}`,
+    method: 'get'
+  });
+}

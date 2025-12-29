@@ -17,5 +17,10 @@ declare namespace Api {
 
     /** user list */
     type UserList = Common.PaginatingQueryRecord<User>;
+
+    /** user operate params */
+    type UserOperateParams = CommonType.RecordNullable<
+      User
+    >;
   }
 }

@@ -19,6 +19,7 @@ const local: App.I18n.Schema = {
     columnSetting: 'Column Setting',
     config: 'Config',
     confirm: 'Confirm',
+    save: 'Save',
     delete: 'Delete',
     deleteSuccess: 'Delete Success',
     confirmDelete: 'Are you sure you want to delete?',
