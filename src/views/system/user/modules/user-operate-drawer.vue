@@ -31,7 +31,7 @@ const visible = defineModel<boolean>('visible', {
 
 const { loading, startLoading, endLoading } = useLoading();
 const { loading: deptLoading, startLoading: startDeptLoading, endLoading: endDeptLoading } = useLoading();
-const { validate, restoreValidation } = useNaiveForm();
+const { formRef, validate, restoreValidation } = useNaiveForm();
 const { createRequiredRule, patternRules } = useFormRules();
 
 const title = computed(() => {
@@ -76,7 +76,7 @@ const rules: Record<RuleKey, App.Global.FormRule[]> = {
   password: [{ ...patternRules.pwd, required: props.operateType === 'add' }],
   phone: [patternRules.phone],
   status: [createRequiredRule('请选择状态')],
-  role: [{ ...createRequiredRule('请选择角色'), type: 'array' }]
+  role: [{ ...createRequiredRule('请选择角色'), type: 'string' }]
 };
 
 async function getUserInfo(id: CommonType.IdType = '') {
@@ -157,7 +157,7 @@ watch(visible, () => {
   <NDrawer v-model:show="visible" display-directive="show" :width="800" class="max-w-90%">
     <NDrawerContent :title="title" :native-scrollbar="false" closable>
       <NSpin :show="loading">
-        <NForm :model="model" :rules="rules">
+        <NForm ref="formRef" :model="model" :rules="rules">
           <NFormItem :label="$t('page.system.user.realName')" path="realName">
             <NInput v-model:value="model.realName" :placeholder="'请输入姓名'" />
           </NFormItem>
@@ -168,38 +168,25 @@ watch(visible, () => {
             <NInput v-model:value="model.userName" :placeholder="'请输入用户名称'" />
           </NFormItem>
           <NFormItem v-if="operateType === 'add'" :label="'密码'" path="password">
-            <NInput
-              v-model:value="model.password"
-              type="password"
-              show-password-on="click"
-              :input-props="{ autocomplete: 'off' }"
-              :placeholder="'请输入密码'"
-            />
+            <NInput v-model:value="model.password" type="password" show-password-on="click"
+              :input-props="{ autocomplete: 'off' }" :placeholder="'请输入密码'" />
           </NFormItem>
 
           <NFormItem :label="'角色'" path="role">
-            <NSelect
-              v-model:value="model.role"
-              :loading="loading"
-              :options="roleOptions"
-              clearable
-              placeholder="请选择角色"
-            />
+            <NSelect v-model:value="model.role" :loading="loading" :options="roleOptions" clearable
+              placeholder="请选择角色" />
           </NFormItem>
           <NFormItem :label="$t('page.system.user.status')" path="status">
-            <NSelect
-              v-model:value="model.status"
-              :options="[
-                {
-                  label: '正常',
-                  value: '0'
-                },
-                {
-                  label: '停用',
-                  value: '1'
-                }
-              ]"
-            />
+            <NSelect v-model:value="model.status" :options="[
+              {
+                label: '正常',
+                value: '0'
+              },
+              {
+                label: '停用',
+                value: '1'
+              }
+            ]" />
           </NFormItem>
         </NForm>
       </NSpin>
