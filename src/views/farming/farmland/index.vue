@@ -43,6 +43,14 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
       minWidth: 120
     },
     {
+      key: 'userName',
+      title: '所属人员',
+      align: 'center',
+      minWidth: 100,
+      // FIXME 后端返回所属人员姓名
+      render: row => row.userName
+    },
+    {
       key: 'areaSize',
       title: '面积(亩)',
       align: 'center',

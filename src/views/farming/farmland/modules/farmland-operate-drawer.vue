@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { jsonClone } from '@sa/utils';
 import { useLoading } from '@sa/hooks';
 import { fetchCreateFarmland, fetchGetFarmlandInfo, fetchUpdateFarmland } from '@/service/api/farming';
+import { fetchGetUserList } from '@/service/api/system';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { $t } from '@/locales';
 
@@ -30,6 +31,7 @@ const visible = defineModel<boolean>('visible', {
 });
 
 const { loading, startLoading, endLoading } = useLoading();
+const { loading: userLoading, startLoading: startUserLoading, endLoading: endUserLoading } = useLoading();
 const { formRef, validate, restoreValidation } = useNaiveForm();
 const { createRequiredRule } = useFormRules();
 
@@ -45,6 +47,9 @@ type Model = Api.Farming.FarmlandOperateParams;
 
 const model = ref<Model>(createDefaultModel());
 
+/** 用户选项 */
+const userOptions = ref<{ label: string; value: CommonType.IdType }[]>([]);
+
 /** 土壤类型选项 */
 const soilTypeOptions = [
   { label: '黑土', value: '黑土' },
@@ -59,6 +64,7 @@ function createDefaultModel(): Model {
   return {
     id: null,
     userId: null,
+    userName: null,
     name: '',
     areaSize: null,
     location: '',
@@ -73,11 +79,25 @@ function createDefaultModel(): Model {
   };
 }
 
-type RuleKey = Extract<keyof Model, 'name'>;
+type RuleKey = Extract<keyof Model, 'name' | 'userId'>;
 
 const rules: Record<RuleKey, App.Global.FormRule[]> = {
-  name: [createRequiredRule('请输入地块名称')]
+  name: [createRequiredRule('请输入地块名称')],
+  userId: [{ ...createRequiredRule('请选择所属人员'), type: 'string' }]
 };
+
+/** 获取用户列表 */
+async function getUserOptions() {
+  startUserLoading();
+  const { error, data } = await fetchGetUserList({ current: 1, size: 1000 });
+  if (!error && data.records) {
+    userOptions.value = data.records.map(user => ({
+      label: user.realName || user.userName,
+      value: user.userId
+    }));
+  }
+  endUserLoading();
+}
 
 async function getFarmlandInfo(id: CommonType.IdType = '') {
   if (!id) return;
@@ -114,11 +134,12 @@ async function handleSubmit() {
     return;
   }
 
-  const { id, name, areaSize, location, soilType, description, polygonPath } = model.value;
+  const { id, userId, name, areaSize, location, soilType, description, polygonPath } = model.value;
 
   // request
   if (props.operateType === 'add') {
     const { error } = await fetchCreateFarmland({
+      userId,
       name,
       areaSize,
       location,
@@ -132,6 +153,7 @@ async function handleSubmit() {
   if (props.operateType === 'edit') {
     const { error } = await fetchUpdateFarmland({
       id,
+      userId,
       name,
       areaSize,
       location,
@@ -153,6 +175,10 @@ watch(visible, () => {
     restoreValidation();
   }
 });
+
+onMounted(() => {
+  getUserOptions();
+});
 </script>
 
 <template>
@@ -162,6 +188,16 @@ watch(visible, () => {
         <NForm ref="formRef" :model="model" :rules="rules">
           <NFormItem label="地块名称" path="name">
             <NInput v-model:value="model.name" placeholder="请输入地块名称" />
+          </NFormItem>
+          <NFormItem label="所属人员" path="userId">
+            <NSelect
+              v-model:value="model.userId"
+              :options="userOptions"
+              :loading="userLoading"
+              filterable
+              clearable
+              placeholder="请选择所属人员"
+            />
           </NFormItem>
           <NFormItem label="面积(亩)" path="areaSize">
             <NInputNumber
