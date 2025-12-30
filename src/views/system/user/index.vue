@@ -3,10 +3,10 @@ import { ref } from 'vue';
 import { NAvatar, NButton, NDivider, NEllipsis, NTag } from 'naive-ui';
 import { fetchGetUserList, fetchUpdateUserStatus } from '@/service/api/system';
 import { defaultTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
-import UserOperateDrawer from './modules/user-operate-drawer.vue';
-import UserSearch from './modules/user-seach.vue';
 import { $t } from '@/locales';
 import StatusSwitch from '@/components/custom/status-switch.vue';
+import UserOperateDrawer from './modules/user-operate-drawer.vue';
+import UserSearch from './modules/user-seach.vue';
 
 const searchParams = ref<Api.System.UserSearchParams>({
   current: 1,
@@ -68,9 +68,12 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
       minWidth: 100,
       render(row) {
         return (
-          <StatusSwitch v-model:value={row.status} disabled={row.userId === 1} info={row.userName}
-           onSubmitted={(value, callback) => handleStatusChange(row, value, callback)}/>
-
+          <StatusSwitch
+            v-model:value={row.status}
+            disabled={row.userId === 1}
+            info={row.userName}
+            onSubmitted={(value, callback) => handleStatusChange(row, value, callback)}
+          />
         );
       }
     },
@@ -128,10 +131,23 @@ function handleResetSearch() {
   <div class="min-h-500px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
     <UserSearch v-model:model="searchParams" @reset="handleResetSearch" @search="getDataByPage" />
     <NCard title="用户列表" :bordered="false" size="small" class="card-wrapper sm:flex-1-hidden">
-      <NDataTable :columns="columns" :data="data" size="small" :scroll-x="962" :loading="loading" remote
-        :row-key="row => row.id" :pagination="mobilePagination" class="sm:h-full" />
-      <UserOperateDrawer v-model:visible="drawerVisible" :operate-type="operateType" :row-data="editingData"
-        @submitted="getDataByPage" />
+      <NDataTable
+        :columns="columns"
+        :data="data"
+        size="small"
+        :scroll-x="962"
+        :loading="loading"
+        remote
+        :row-key="row => row.id"
+        :pagination="mobilePagination"
+        class="sm:h-full"
+      />
+      <UserOperateDrawer
+        v-model:visible="drawerVisible"
+        :operate-type="operateType"
+        :row-data="editingData"
+        @submitted="getDataByPage"
+      />
     </NCard>
   </div>
 </template>
