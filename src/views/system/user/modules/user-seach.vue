@@ -63,48 +63,25 @@ async function search() {
             <NFormItemGi span="24 s:12 m:6" :label="'用户姓名'" path="realName" class="pr-24px">
               <NInput v-model:value="model.realName" :placeholder="'请输入用户姓名'" />
             </NFormItemGi>
-            <NFormItemGi
-              span="24 s:12 m:6"
-              :label="'手机号码'"
-              path="phone"
-              class="pr-24px"
-            >
-              <NInput
-                v-model:value="model.phone"
-                :placeholder="'请输入手机号码'"
-              />
+            <NFormItemGi span="24 s:12 m:6" :label="'手机号码'" path="phone" class="pr-24px">
+              <NInput v-model:value="model.phone" :placeholder="'请输入手机号码'" />
             </NFormItemGi>
-             <!-- TODO 状态文字 -->
             <NFormItemGi span="24 s:12 m:6" :label="$t('page.system.user.status')" path="status" class="pr-24px">
-              <NSelect
-                v-model:value="model.status"
-                placeholder="请选择用户状态"
-                :options="[
-                  {
-                    label: '正常',
-                    value: '0'
-                  },
-                  {
-                    label: '停用',
-                    value: '1'
-                  }
-                ]"
-              />
+              <NSelect v-model:value="model.status" placeholder="请选择用户状态" :options="[
+                {
+                  label: '正常',
+                  value: '0'
+                },
+                {
+                  label: '停用',
+                  value: '1'
+                }
+              ]" />
             </NFormItemGi>
-            <NFormItemGi
-              span="24 s:12 m:12"
-              :label="'创建时间'"
-              path="createTime"
-              class="pr-24px"
-            >
-              <NDatePicker
-                v-model:formatted-value="dateRangeCreateTime"
-                type="datetimerange"
-                value-format="yyyy-MM-dd HH:mm:ss"
-                clearable
-                @update:formatted-value="onDateRangeCreateTimeUpdate"
-              />
-            </NFormItemGi>
+            <!-- <NFormItemGi span="24 s:12 m:12" :label="'创建时间'" path="createTime" class="pr-24px">
+              <NDatePicker v-model:formatted-value="dateRangeCreateTime" type="datetimerange"
+                value-format="yyyy-MM-dd HH:mm:ss" clearable @update:formatted-value="onDateRangeCreateTimeUpdate" />
+            </NFormItemGi> -->
             <NFormItemGi span="24 s:12 m:12" class="pr-24px">
               <NSpace class="w-full" justify="end">
                 <NButton @click="reset">
@@ -128,6 +105,4 @@ async function search() {
   </NCard>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

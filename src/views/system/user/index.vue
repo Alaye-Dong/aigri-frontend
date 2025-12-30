@@ -94,10 +94,10 @@ const { drawerVisible, operateType, editingData, handleAdd, handleEdit, checkedR
   useTableOperate(data, 'userId', getData);
 
 async function edit(userId: CommonType.IdType) {
-    console.log('Editing user ID:', userId);
-  console.log('Current data:', data.value);
   handleEdit(userId);
 }
+
+const selectedKeys = ref<string[]>([]);
 
 /** 处理状态切换 */
 async function handleStatusChange(
@@ -117,11 +117,16 @@ async function handleStatusChange(
     getData();
   }
 }
+
+function handleResetSearch() {
+  selectedKeys.value = [];
+  getDataByPage();
+}
 </script>
 
 <template>
   <div class="min-h-500px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
-    <UserSearch v-model:model="searchParams" @search="getDataByPage" />
+    <UserSearch v-model:model="searchParams" @reset="handleResetSearch" @search="getDataByPage" />
     <NCard title="用户列表" :bordered="false" size="small" class="card-wrapper sm:flex-1-hidden">
       <NDataTable :columns="columns" :data="data" size="small" :scroll-x="962" :loading="loading" remote
         :row-key="row => row.id" :pagination="mobilePagination" class="sm:h-full" />
