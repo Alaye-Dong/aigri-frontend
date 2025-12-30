@@ -40,6 +40,48 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
+    name: 'farming',
+    path: '/farming',
+    component: 'layout.base',
+    meta: {
+      title: 'farming',
+      i18nKey: 'route.farming',
+      icon: 'mdi:table-user'
+    },
+    children: [
+      {
+        name: 'farming_crop',
+        path: '/farming/crop',
+        component: 'view.farming_crop',
+        meta: {
+          title: 'farming_crop',
+          i18nKey: 'route.farming_crop',
+          icon:'material-symbols:potted-plant-outline'
+        }
+      },
+      {
+        name: 'farming_farming-log',
+        path: '/farming/farming-log',
+        component: 'view.farming_farming-log',
+        meta: {
+          title: 'farming_farming-log',
+          i18nKey: 'route.farming_farming-log',
+          icon:'mdi:account-clock-outline'
+        }
+      },
+      {
+        name: 'farming_farmland',
+        path: '/farming/farmland',
+        component: 'view.farming_farmland',
+        meta: {
+          title: 'farming_farmland',
+          i18nKey: 'route.farming_farmland',
+          icon:'material-symbols:backup-table'
+        }
+      }
+    ]
+  },
+  {
     name: 'home',
     path: '/home',
     component: 'layout.base$view.home',

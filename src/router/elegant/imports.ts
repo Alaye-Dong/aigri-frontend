@@ -20,6 +20,9 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   500: () => import("@/views/_builtin/500/index.vue"),
   "iframe-page": () => import("@/views/_builtin/iframe-page/[url].vue"),
   login: () => import("@/views/_builtin/login/index.vue"),
+  farming_crop: () => import("@/views/farming/crop/index.vue"),
+  "farming_farming-log": () => import("@/views/farming/farming-log/index.vue"),
+  farming_farmland: () => import("@/views/farming/farmland/index.vue"),
   home: () => import("@/views/home/index.vue"),
   system_user: () => import("@/views/system/user/index.vue"),
 };

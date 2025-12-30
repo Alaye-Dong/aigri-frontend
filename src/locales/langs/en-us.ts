@@ -254,7 +254,11 @@ const local: App.I18n.Schema = {
     'iframe-page': 'Iframe',
     home: 'Home',
     system: 'System Management',
-    system_user: 'User Management'
+    system_user: 'User Management',
+    farming: 'Farming',
+    farming_crop: 'Crop Management',
+    'farming_farming-log':'Farming Log Management',
+    farming_farmland: 'Farmland Management'
   },
   page: {
     login: {

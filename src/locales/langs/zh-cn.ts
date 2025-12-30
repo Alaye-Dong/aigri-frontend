@@ -250,7 +250,11 @@ const local: App.I18n.Schema = {
     'iframe-page': '外链页面',
     home: '首页',
     system: '系统管理',
-    system_user: '用户管理'
+    system_user: '用户管理',
+    farming: '生产管理',
+    farming_crop: '作物管理',
+    'farming_farming-log':'农事日志',
+    farming_farmland: '田块管理'
   },
   page: {
     login: {

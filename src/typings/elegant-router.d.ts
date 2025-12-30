@@ -20,6 +20,10 @@ declare module "@elegant-router/types" {
     "403": "/403";
     "404": "/404";
     "500": "/500";
+    "farming": "/farming";
+    "farming_crop": "/farming/crop";
+    "farming_farming-log": "/farming/farming-log";
+    "farming_farmland": "/farming/farmland";
     "home": "/home";
     "iframe-page": "/iframe-page/:url";
     "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?";
@@ -59,6 +63,7 @@ declare module "@elegant-router/types" {
     | "403"
     | "404"
     | "500"
+    | "farming"
     | "home"
     | "iframe-page"
     | "login"
@@ -84,6 +89,9 @@ declare module "@elegant-router/types" {
     | "500"
     | "iframe-page"
     | "login"
+    | "farming_crop"
+    | "farming_farming-log"
+    | "farming_farmland"
     | "home"
     | "system_user"
   >;
