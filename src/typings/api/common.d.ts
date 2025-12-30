@@ -21,7 +21,12 @@ declare namespace Api {
     }
 
     /** common search params of table */
-    type CommonSearchParams = Pick<Common.PaginatingCommonParams, 'current' | 'size'>;
+    type CommonSearchParams = Pick<Common.PaginatingCommonParams, 'current' | 'size'> &
+      CommonType.RecordNullable<{
+        orderByColumn: string;
+        isAsc: 'asc' | 'desc';
+        params: { [key: string]: any };
+      }>;
 
     /**
      * 启用状态

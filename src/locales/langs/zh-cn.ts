@@ -308,7 +308,7 @@ const local: App.I18n.Schema = {
     system: {
       user: {
         userName: '用户名称',
-        realName: '真实姓名',
+        realName: '用户姓名',
         phone: '电话',
         role: '角色',
         status: '状态'

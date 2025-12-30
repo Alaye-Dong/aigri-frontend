@@ -4,6 +4,7 @@ import { NAvatar, NButton, NDivider, NEllipsis, NTag } from 'naive-ui';
 import { fetchGetUserList, fetchUpdateUserStatus } from '@/service/api/system';
 import { defaultTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
 import UserOperateDrawer from './modules/user-operate-drawer.vue';
+import UserSearch from './modules/user-seach.vue';
 import { $t } from '@/locales';
 import StatusSwitch from '@/components/custom/status-switch.vue';
 
@@ -120,6 +121,7 @@ async function handleStatusChange(
 
 <template>
   <div class="min-h-500px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
+    <UserSearch v-model:model="searchParams" @search="getDataByPage" />
     <NCard title="用户列表" :bordered="false" size="small" class="card-wrapper sm:flex-1-hidden">
       <NDataTable :columns="columns" :data="data" size="small" :scroll-x="962" :loading="loading" remote
         :row-key="row => row.id" :pagination="mobilePagination" class="sm:h-full" />
