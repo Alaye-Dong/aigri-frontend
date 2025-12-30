@@ -153,7 +153,7 @@ watch(visible, () => {
 </script>
 
 <template>
-  <NDrawer v-model:show="visible" display-directive="show" :width="800" class="max-w-90%">
+  <NDrawer v-model:show="visible" display-directive="show" :width="360" class="max-w-90%">
     <NDrawerContent :title="title" :native-scrollbar="false" closable>
       <NSpin :show="loading">
         <NForm ref="formRef" :model="model" :rules="rules">

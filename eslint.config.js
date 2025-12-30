@@ -22,7 +22,8 @@ export default defineConfig(
       '@typescript-eslint/no-unused-vars': 'warn',
       'no-unused-vars': 'warn',
       '@typescript-eslint/no-unused-expressions': 'warn',
-      'no-unused-expressions': 'warn'
+      'no-unused-expressions': 'warn',
+      'no-warning-comments': false
     }
   }
 );

@@ -20,7 +20,7 @@ interface FormModel {
 }
 
 const model: FormModel = reactive({
-  userName: 'Soybean',
+  userName: 'Admin',
   password: '123456'
 });
 
@@ -47,14 +47,14 @@ interface Account {
   userName: string;
   password: string;
 }
-
+// TODO 便于开发测试时使用正式环境需要删除
 const accounts = computed<Account[]>(() => [
-  {
-    key: 'super',
-    label: $t('page.login.pwdLogin.superAdmin'),
-    userName: 'Super',
-    password: '123456'
-  },
+  // {
+  //   key: 'super',
+  //   label: $t('page.login.pwdLogin.superAdmin'),
+  //   userName: 'Super',
+  //   password: '123456'
+  // },
   {
     key: 'admin',
     label: $t('page.login.pwdLogin.admin'),
@@ -98,14 +98,17 @@ async function handleAccountLogin(account: Account) {
         {{ $t('common.confirm') }}
       </NButton>
       <div class="flex-y-center justify-between gap-12px">
-        <NButton class="flex-1" block @click="toggleLoginModule('code-login')">
+        <!--
+ <NButton class="flex-1" block @click="toggleLoginModule('code-login')">
           {{ $t(loginModuleRecord['code-login']) }}
         </NButton>
+-->
         <NButton class="flex-1" block @click="toggleLoginModule('register')">
           {{ $t(loginModuleRecord.register) }}
         </NButton>
       </div>
-      <NDivider class="text-14px text-#666 !m-0">{{ $t('page.login.pwdLogin.otherAccountLogin') }}</NDivider>
+
+      <NDivider class="text-14px text-red !m-0">{{ '测试环境快捷登录 正式环境需要删除' }}</NDivider>
       <div class="flex-center gap-12px">
         <NButton v-for="item in accounts" :key="item.key" type="primary" @click="handleAccountLogin(item)">
           {{ item.label }}
