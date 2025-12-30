@@ -18,6 +18,14 @@ export function fetchCreateUser(data: Api.System.UserOperateParams) {
   });
 }
 
+/** 批量删除用户信息 */
+export function fetchBatchDeleteUser(userIds: CommonType.IdType[]) {
+  return request<boolean>({
+    url: `/system/user/${userIds.join(',')}`,
+    method: 'delete'
+  });
+}
+
 /** 修改用户信息 */
 export function fetchUpdateUser(data: Api.System.UserOperateParams) {
   return request<boolean>({

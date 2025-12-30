@@ -1,10 +1,11 @@
 <script setup lang="tsx">
 import { ref } from 'vue';
 import { NAvatar, NButton, NDivider, NEllipsis, NTag } from 'naive-ui';
-import { fetchGetUserList, fetchUpdateUserStatus } from '@/service/api/system';
+import { fetchBatchDeleteUser, fetchGetUserList, fetchUpdateUserStatus } from '@/service/api/system';
 import { defaultTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
 import { $t } from '@/locales';
 import StatusSwitch from '@/components/custom/status-switch.vue';
+import ButtonIcon from '@/components/custom/button-icon.vue';
 import UserOperateDrawer from './modules/user-operate-drawer.vue';
 import UserSearch from './modules/user-seach.vue';
 
@@ -82,19 +83,81 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
       title: $t('common.operate'),
       align: 'center',
       width: 130,
-      render: row => (
-        <div class="flex-center gap-8px">
-          <NButton type="primary" ghost size="small" onClick={() => edit(row.userId)}>
-            {$t('common.edit')}
-          </NButton>
-        </div>
-      )
+      render: row => {
+        if (row.userId === 1) return null;
+
+        const editBtn = () => {
+          return (
+            <ButtonIcon
+              text
+              type="primary"
+              icon="material-symbols:drive-file-rename-outline-outline"
+              tooltipContent={$t('common.edit')}
+              onClick={() => edit(row.userId)}
+            />
+          );
+        };
+
+        // const passwordBtn = () => {
+        //   return (
+        //     <ButtonIcon
+        //       text
+        //       type="primary"
+        //       icon="material-symbols:key-vertical-outline"
+        //       tooltipContent="重置密码"
+        //       onClick={() => handleResetPwd(row.userId)}
+        //     />
+        //   );
+        // };
+
+        const deleteBtn = () => {
+          return (
+            <ButtonIcon
+              text
+              type="error"
+              icon="material-symbols:delete-outline"
+              tooltipContent={$t('common.delete')}
+              popconfirmContent={$t('common.confirmDelete')}
+              onPositiveClick={() => handleDelete(row.userId)}
+            />
+          );
+        };
+
+        const buttons = [];
+        buttons.push(editBtn());
+        buttons.push(deleteBtn());
+
+        return (
+          <div class="flex-center gap-8px">
+            {buttons.map((btn, index) => (
+              <>
+                {index !== 0 && <NDivider vertical />}
+                {btn}
+              </>
+            ))}
+          </div>
+        );
+      }
     }
   ]
 });
 
 const { drawerVisible, operateType, editingData, handleAdd, handleEdit, checkedRowKeys, onBatchDeleted, onDeleted } =
   useTableOperate(data, 'userId', getData);
+
+async function handleBatchDelete() {
+  // request
+  const { error } = await fetchBatchDeleteUser(checkedRowKeys.value);
+  if (error) return;
+  onBatchDeleted();
+}
+
+async function handleDelete(userId: CommonType.IdType) {
+  // request
+  const { error } = await fetchBatchDeleteUser([userId]);
+  if (error) return;
+  onDeleted();
+}
 
 async function edit(userId: CommonType.IdType) {
   handleEdit(userId);
@@ -131,7 +194,18 @@ function handleResetSearch() {
   <div class="min-h-500px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
     <UserSearch v-model:model="searchParams" @reset="handleResetSearch" @search="getDataByPage" />
     <NCard title="用户列表" :bordered="false" size="small" class="card-wrapper sm:flex-1-hidden">
+      <template #header-extra>
+        <TableHeaderOperation
+          v-model:columns="columnChecks"
+          :disabled-delete="checkedRowKeys.length === 0"
+          :loading="loading"
+          @add="handleAdd"
+          @delete="handleBatchDelete"
+          @refresh="getData"
+        />
+      </template>
       <NDataTable
+        v-model:checked-row-keys="checkedRowKeys"
         :columns="columns"
         :data="data"
         size="small"
