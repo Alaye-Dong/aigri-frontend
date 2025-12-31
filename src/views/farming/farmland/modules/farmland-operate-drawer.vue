@@ -83,7 +83,7 @@ type RuleKey = Extract<keyof Model, 'name' | 'userId'>;
 
 const rules: Record<RuleKey, App.Global.FormRule[]> = {
   name: [createRequiredRule('请输入地块名称')],
-  userId: [{ ...createRequiredRule('请选择所属人员'), type: 'string' }]
+  userId: [{ ...createRequiredRule('请选择负责人'), type: 'string' }]
 };
 
 /** 获取用户列表 */
@@ -127,6 +127,23 @@ function closeDrawer() {
   visible.value = false;
 }
 
+// 创建一个计算属性来处理 areaSize 的类型转换
+const areaSizeNumber = computed<number | null>({
+  get() {
+    const value = model.value.areaSize;
+    if (value === null || value === undefined) {
+      return null;
+    }
+    // 将字符串转换为数字
+    const num = Number(value);
+    return isNaN(num) ? null : num;
+  },
+  set(value) {
+    // 设置值时，直接使用数字或 null
+    model.value.areaSize = value;
+  }
+});
+
 async function handleSubmit() {
   try {
     await validate();
@@ -134,7 +151,8 @@ async function handleSubmit() {
     return;
   }
 
-  const { id, userId, name, areaSize, location, soilType, description, polygonPath } = model.value;
+  const { id, userId, name, location, soilType, description, polygonPath } = model.value;
+  const areaSize = areaSizeNumber.value; // 使用转换后的数字值
 
   // request
   if (props.operateType === 'add') {
@@ -201,7 +219,7 @@ onMounted(() => {
           </NFormItem>
           <NFormItem label="面积(亩)" path="areaSize">
             <NInputNumber
-              v-model:value="model.areaSize"
+              v-model:value="areaSizeNumber"
               placeholder="请输入面积"
               :precision="2"
               :min="0"
