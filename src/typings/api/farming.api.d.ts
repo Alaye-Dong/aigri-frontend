@@ -67,5 +67,44 @@ declare namespace Api {
 
     /** 作物操作参数 */
     type CropOperateParams = CommonType.RecordNullable<Crop>;
+
+    /** 农事日志 */
+    type FarmingLog = Common.CommonRecord<{
+      /** 日志ID */
+      id: CommonType.IdType;
+      /** 农田ID */
+      farmlandId: CommonType.IdType;
+      /** 作物ID */
+      cropId: CommonType.IdType | null;
+      /** 操作人ID */
+      userId: CommonType.IdType | null;
+      /** 操作类型 */
+      operateType: string;
+      /** 操作内容 */
+      content: string | null;
+      /** 成本 */
+      cost: number | null;
+      /** 图片 */
+      images: string | null;
+      /** 操作时间 */
+      operateTime: string;
+      /** 农田名称(关联查询) */
+      farmlandName: string | null;
+      /** 作物名称(关联查询) */
+      cropName: string | null;
+      /** 操作人姓名(关联查询) */
+      userRealName: string | null;
+    }>;
+
+    /** 农事日志搜索参数 */
+    type FarmingLogSearchParams = CommonType.RecordNullable<
+      Pick<FarmingLog, 'farmlandId' | 'operateType' | 'userId'> & Common.CommonSearchParams
+    >;
+
+    /** 农事日志列表 */
+    type FarmingLogList = Common.PaginatingQueryRecord<FarmingLog>;
+
+    /** 农事日志操作参数 */
+    type FarmingLogOperateParams = CommonType.RecordNullable<FarmingLog>;
   }
 }
