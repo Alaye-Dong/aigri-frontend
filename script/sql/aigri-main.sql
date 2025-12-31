@@ -1,4 +1,4 @@
--- update time 2025-12-24 155615
+-- update time 2025-12-31 17:35:00
 
 -- 1. 用户表
 CREATE TABLE `system_user` (
@@ -81,7 +81,7 @@ CREATE TABLE `farming_log` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `farmland_id` BIGINT NOT NULL,
   `crop_id` BIGINT,
-  `operator_id` BIGINT,
+  `user_id` BIGINT,
   `operate_type` VARCHAR(50) NOT NULL,
   `content` TEXT,
   `cost` DECIMAL(10,2) DEFAULT 0.00,
@@ -92,7 +92,7 @@ CREATE TABLE `farming_log` (
   KEY `idx_farmland_op` (`farmland_id`, `operate_time`),
   CONSTRAINT `fk_log_farmland` FOREIGN KEY (`farmland_id`) REFERENCES `farmland` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_log_crop` FOREIGN KEY (`crop_id`) REFERENCES `crop` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `fk_log_operator` FOREIGN KEY (`operator_id`) REFERENCES `system_user` (`user_id`) ON DELETE SET NULL
+  CONSTRAINT `fk_log_operator` FOREIGN KEY (`user_id`) REFERENCES `system_user` (`user_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB COMMENT='农事操作日志表';
 
 -- 7. AI建议表
