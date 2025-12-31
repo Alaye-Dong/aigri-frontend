@@ -43,12 +43,11 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
       minWidth: 120
     },
     {
-      key: 'userName',
-      title: '所属人员',
+      key: 'userRealName',
+      title: '负责人姓名',
       align: 'center',
       minWidth: 100,
-      // FIXME 后端返回所属人员姓名
-      render: row => row.userName
+      render: row => row.userRealName
     },
     {
       key: 'areaSize',

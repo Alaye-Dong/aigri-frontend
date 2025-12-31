@@ -7,7 +7,7 @@ declare namespace Api {
       /** 所属用户ID */
       userId: CommonType.IdType;
       /** 所属用户姓名(关联查询) */
-      userName: string | null;
+      userRealName: string | null;
       /** 地块名称 */
       name: string;
       /** 面积(亩) */

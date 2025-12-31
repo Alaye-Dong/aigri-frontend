@@ -64,7 +64,7 @@ function createDefaultModel(): Model {
   return {
     id: null,
     userId: null,
-    userName: null,
+    userRealName: null,
     name: '',
     areaSize: null,
     location: '',
@@ -92,7 +92,7 @@ async function getUserOptions() {
   const { error, data } = await fetchGetUserList({ current: 1, size: 1000 });
   if (!error && data.records) {
     userOptions.value = data.records.map(user => ({
-      label: user.realName || user.userName,
+      label: user.realName,
       value: user.userId
     }));
   }
@@ -189,14 +189,14 @@ onMounted(() => {
           <NFormItem label="地块名称" path="name">
             <NInput v-model:value="model.name" placeholder="请输入地块名称" />
           </NFormItem>
-          <NFormItem label="所属人员" path="userId">
+          <NFormItem label="负责人" path="userId">
             <NSelect
               v-model:value="model.userId"
               :options="userOptions"
               :loading="userLoading"
               filterable
               clearable
-              placeholder="请选择所属人员"
+              placeholder="请选择负责人"
             />
           </NFormItem>
           <NFormItem label="面积(亩)" path="areaSize">
