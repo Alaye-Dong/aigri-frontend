@@ -38,5 +38,32 @@ declare namespace Api {
       label: string;
       value: string;
     };
+
+    /** 作物 */
+    type Crop = Common.CommonRecord<{
+      /** 作物ID */
+      id: CommonType.IdType;
+      /** 所属农田ID */
+      farmlandId: CommonType.IdType;
+      /** 作物名称 */
+      cropName: string;
+      /** 品种 */
+      variety: string | null;
+      /** 种植日期 */
+      plantDate: string | null;
+      /** 状态 */
+      status: number | null;
+    }>;
+
+    /** 作物搜索参数 */
+    type CropSearchParams = CommonType.RecordNullable<
+      Pick<Crop, 'cropName' | 'variety' | 'farmlandId' | 'status'> & Common.CommonSearchParams
+    >;
+
+    /** 作物列表 */
+    type CropList = Common.PaginatingQueryRecord<Crop>;
+
+    /** 作物操作参数 */
+    type CropOperateParams = CommonType.RecordNullable<Crop>;
   }
 }

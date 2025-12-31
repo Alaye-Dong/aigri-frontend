@@ -56,7 +56,7 @@ export const generatedRoutes: GeneratedRoute[] = [
         meta: {
           title: 'farming_crop',
           i18nKey: 'route.farming_crop',
-          icon:'material-symbols:potted-plant-outline'
+          icon: 'material-symbols:potted-plant-outline'
         }
       },
       {
@@ -66,7 +66,7 @@ export const generatedRoutes: GeneratedRoute[] = [
         meta: {
           title: 'farming_farming-log',
           i18nKey: 'route.farming_farming-log',
-          icon:'mdi:account-clock-outline'
+          icon: 'mdi:account-clock-outline'
         }
       },
       {
@@ -76,7 +76,7 @@ export const generatedRoutes: GeneratedRoute[] = [
         meta: {
           title: 'farming_farmland',
           i18nKey: 'route.farming_farmland',
-          icon:'material-symbols:backup-table'
+          icon: 'material-symbols:backup-table'
         }
       }
     ]
