@@ -45,6 +45,8 @@ declare namespace Api {
       id: CommonType.IdType;
       /** 所属农田ID */
       farmlandId: CommonType.IdType;
+      /** 所属农田名称(关联查询) */
+      farmlandName: string;
       /** 作物名称 */
       cropName: string;
       /** 品种 */

@@ -55,9 +55,7 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
       align: 'center',
       minWidth: 100,
       render: row => {
-        // 由于API返回的farmlandId是ID，我们可能需要显示农田名称
-        // 这里暂时显示ID，后续可以优化为显示农田名称
-        return row.farmlandId;
+        return row.farmlandName;
       }
     },
     {

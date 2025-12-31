@@ -47,29 +47,6 @@ type Model = Api.Farming.CropOperateParams;
 
 const model = ref<Model>(createDefaultModel());
 
-// 计算属性用于处理 NDatePicker 的日期值类型转换
-const plantDateValue = computed({
-  get() {
-    // 如果后端返回的是字符串格式日期，转换为时间戳
-    if (model.value.plantDate) {
-      return new Date(model.value.plantDate).getTime();
-    }
-    return null;
-  },
-  set(value: number | null) {
-    // 将时间戳转换回字符串格式供后端使用
-    if (value) {
-      const date = new Date(value);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      model.value.plantDate = `${year}-${month}-${day}`;
-    } else {
-      model.value.plantDate = null;
-    }
-  }
-});
-
 /** 农田选项 */
 const farmlandOptions = ref<{ label: string; value: CommonType.IdType }[]>([]);
 
@@ -216,8 +193,9 @@ onMounted(() => {
           </NFormItem>
           <NFormItem label="种植日期" path="plantDate">
             <NDatePicker
-              v-model:value="plantDateValue"
+              v-model:formatted-value="model.plantDate"
               type="date"
+              value-format="yyyy-MM-dd HH:mm:ss"
               placeholder="请选择种植日期"
               class="w-full"
             />
