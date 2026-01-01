@@ -166,6 +166,8 @@ const routeMap: RouteMap = {
   "403": "/403",
   "404": "/404",
   "500": "/500",
+  "env": "/env",
+  "env_device": "/env/device",
   "farming": "/farming",
   "farming_crop": "/farming/crop",
   "farming_farming-log": "/farming/farming-log",

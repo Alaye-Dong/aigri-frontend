@@ -20,6 +20,8 @@ declare module "@elegant-router/types" {
     "403": "/403";
     "404": "/404";
     "500": "/500";
+    "env": "/env";
+    "env_device": "/env/device";
     "farming": "/farming";
     "farming_crop": "/farming/crop";
     "farming_farming-log": "/farming/farming-log";
@@ -63,6 +65,7 @@ declare module "@elegant-router/types" {
     | "403"
     | "404"
     | "500"
+    | "env"
     | "farming"
     | "home"
     | "iframe-page"
@@ -89,6 +92,7 @@ declare module "@elegant-router/types" {
     | "500"
     | "iframe-page"
     | "login"
+    | "env_device"
     | "farming_crop"
     | "farming_farming-log"
     | "farming_farmland"

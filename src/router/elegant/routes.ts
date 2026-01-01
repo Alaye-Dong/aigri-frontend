@@ -40,6 +40,28 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
+    name: 'env',
+    path: '/env',
+    component: 'layout.base',
+    meta: {
+      title: 'env',
+      i18nKey: 'route.env',
+      icon: 'mdi:monitor-eye'
+    },
+    children: [
+      {
+        name: 'env_device',
+        path: '/env/device',
+        component: 'view.env_device',
+        meta: {
+          title: 'env_device',
+          i18nKey: 'route.env_device',
+          icon: 'mdi:mobile-devices'
+        }
+      }
+    ]
+  },
+  {
     name: 'farming',
     path: '/farming',
     component: 'layout.base',
