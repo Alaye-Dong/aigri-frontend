@@ -166,10 +166,7 @@ async function handleStatusChange(
   value: Api.Env.ProcessStatusType,
   callback: (flag: boolean) => void
 ) {
-  const { error } = await fetchUpdateAlertLogStatus({
-    id: row.id,
-    status: value
-  });
+  const { error } = await fetchUpdateAlertLogStatus([row.id], value);
 
   callback(!error);
 

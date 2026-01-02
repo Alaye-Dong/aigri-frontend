@@ -120,10 +120,7 @@ async function handleSubmit() {
 
   // request
   if (props.operateType === 'edit' && id) {
-    const { error } = await fetchUpdateAlertLogStatus({
-      id,
-      status: validProcessStatus
-    });
+    const { error } = await fetchUpdateAlertLogStatus([id], validProcessStatus);
     if (error) return;
   }
 

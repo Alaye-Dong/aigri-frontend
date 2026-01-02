@@ -18,11 +18,11 @@ export function fetchGetAlertLogInfo(id: CommonType.IdType) {
 }
 
 /** 更新告警日志状态 */
-export function fetchUpdateAlertLogStatus(data: { id: CommonType.IdType; status: Api.Env.ProcessStatusType }) {
+export function fetchUpdateAlertLogStatus(ids: CommonType.IdType[], status: Api.Env.ProcessStatusType) {
   return request<null>({
-    url: '/env/alertLog/status',
+    url: `/env/alertLog/status/${ids.join(',')}`,
     method: 'put',
-    data
+    params: { status }
   });
 }
 
