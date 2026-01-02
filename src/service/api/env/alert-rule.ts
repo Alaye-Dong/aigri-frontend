@@ -46,9 +46,8 @@ export function fetchDeleteAlertRule(id: CommonType.IdType) {
 /** 批量删除告警规则 */
 export function fetchBatchDeleteAlertRule(ids: CommonType.IdType[]) {
   return request<null>({
-    url: '/env/alertRule/batch-delete',
+    url: `/env/alertRule/${ids.join(',')}`,
     method: 'delete',
-    data: ids
   });
 }
 
