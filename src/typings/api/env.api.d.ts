@@ -63,5 +63,44 @@ declare namespace Api {
 
     /** 告警规则操作参数 */
     type AlertRuleOperateParams = CommonType.RecordNullable<AlertRule>;
+
+    /** 告警日志信息 */
+    type AlertLog = Common.CommonRecord<{
+      /** 日志ID */
+      id: CommonType.IdType;
+      /** 关联规则ID */
+      ruleId: CommonType.IdType;
+      /** 规则名称 - 用于前端展示 */
+      ruleName: string;
+      /** 农田ID */
+      farmlandId: CommonType.IdType;
+      /** 农田名称 - 用于前端展示 */
+      farmlandName: string;
+      /** 设备ID */
+      deviceId: CommonType.IdType;
+      /** 设备序列号 - 用于前端展示 */
+      deviceSerialNo: string;
+      /** 告警内容 */
+      alertContent: string;
+      /** 指标值 */
+      metricValue: number;
+      /** 处理状态: 0-未读, 1-已处理 */
+      status: ProcessStatusType;
+      /** 创建时间 */
+      createTime: string;
+    }>;
+
+    type ProcessStatusType = '0' | '1';
+
+    /** 告警日志搜索参数 */
+    type AlertLogSearchParams = CommonType.RecordNullable<
+      Pick<AlertLog, 'ruleName' | 'farmlandName' | 'deviceSerialNo' | 'status'> & Common.CommonSearchParams
+    >;
+
+    /** 告警日志列表 */
+    type AlertLogList = Common.PaginatingQueryRecord<AlertLog>;
+
+    /** 告警日志操作参数 */
+    type AlertLogOperateParams = CommonType.RecordNullable<AlertLog>;
   }
 }
