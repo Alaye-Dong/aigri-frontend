@@ -56,7 +56,7 @@ export const generatedRoutes: GeneratedRoute[] = [
         meta: {
           title: 'env_alert-rule',
           i18nKey: 'route.env_alert-rule',
-          icon:'mdi:table-alert'
+          icon: 'mdi:table-alert'
         }
       },
       {
