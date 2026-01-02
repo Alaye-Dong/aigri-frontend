@@ -21,7 +21,9 @@ declare module "@elegant-router/types" {
     "404": "/404";
     "500": "/500";
     "env": "/env";
+    "env_alert-rule": "/env/alert-rule";
     "env_device": "/env/device";
+    "env_env-data": "/env/env-data";
     "farming": "/farming";
     "farming_crop": "/farming/crop";
     "farming_farming-log": "/farming/farming-log";
@@ -92,7 +94,9 @@ declare module "@elegant-router/types" {
     | "500"
     | "iframe-page"
     | "login"
+    | "env_alert-rule"
     | "env_device"
+    | "env_env-data"
     | "farming_crop"
     | "farming_farming-log"
     | "farming_farmland"

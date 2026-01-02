@@ -256,7 +256,9 @@ const local: App.I18n.Schema = {
     'farming_farming-log':'农事日志',
     farming_farmland: '田块管理',
     env: '环境监测',
-    env_device: '设备管理'
+    env_device: '设备管理',
+    'env_env-data': '环境数据',
+    'env_alert-rule': '告警规则',
   },
   page: {
     login: {

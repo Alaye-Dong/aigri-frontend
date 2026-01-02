@@ -50,6 +50,16 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
+        name: 'env_alert-rule',
+        path: '/env/alert-rule',
+        component: 'view.env_alert-rule',
+        meta: {
+          title: 'env_alert-rule',
+          i18nKey: 'route.env_alert-rule',
+          icon:'mdi:table-alert'
+        }
+      },
+      {
         name: 'env_device',
         path: '/env/device',
         component: 'view.env_device',
@@ -57,6 +67,16 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'env_device',
           i18nKey: 'route.env_device',
           icon: 'mdi:mobile-devices'
+        }
+      },
+      {
+        name: 'env_env-data',
+        path: '/env/env-data',
+        component: 'view.env_env-data',
+        meta: {
+          title: 'env_env-data',
+          i18nKey: 'route.env_env-data',
+          icon: 'mdi:data'
         }
       }
     ]

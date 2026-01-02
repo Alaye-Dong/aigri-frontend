@@ -260,7 +260,9 @@ const local: App.I18n.Schema = {
     'farming_farming-log':'Farming Log Management',
     farming_farmland: 'Farmland Management',
     env: 'Env Monitoring',
-    env_device: 'Device Management'
+    env_device: 'Device Management',
+    'env_env-data': 'Env Data',
+    'env_alert-rule': 'Alert Rule Management'
   },
   page: {
     login: {
