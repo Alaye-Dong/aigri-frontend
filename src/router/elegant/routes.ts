@@ -50,6 +50,16 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
+        name: 'env_alert-log',
+        path: '/env/alert-log',
+        component: 'view.env_alert-log',
+        meta: {
+          title: 'env_alert-log',
+          i18nKey: 'route.env_alert-log',
+          icon: 'mdi:reload-alert'
+        }
+      },
+      {
         name: 'env_alert-rule',
         path: '/env/alert-rule',
         component: 'view.env_alert-rule',

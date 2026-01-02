@@ -262,7 +262,8 @@ const local: App.I18n.Schema = {
     env: 'Env Monitoring',
     env_device: 'Device Management',
     'env_env-data': 'Env Data',
-    'env_alert-rule': 'Alert Rule Management'
+    'env_alert-rule': 'Alert Rule Management',
+    'env_alert-log': 'Alert Log',
   },
   page: {
     login: {

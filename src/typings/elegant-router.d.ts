@@ -21,6 +21,7 @@ declare module "@elegant-router/types" {
     "404": "/404";
     "500": "/500";
     "env": "/env";
+    "env_alert-log": "/env/alert-log";
     "env_alert-rule": "/env/alert-rule";
     "env_device": "/env/device";
     "env_env-data": "/env/env-data";
@@ -94,6 +95,7 @@ declare module "@elegant-router/types" {
     | "500"
     | "iframe-page"
     | "login"
+    | "env_alert-log"
     | "env_alert-rule"
     | "env_device"
     | "env_env-data"
