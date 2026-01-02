@@ -3,7 +3,7 @@ import { request } from '@/service/request';
 /** 获取告警规则列表 */
 export function fetchGetAlertRuleList(params: Api.Env.AlertRuleSearchParams) {
   return request<Api.Env.AlertRuleList>({
-    url: '/env/alert-rule/list',
+    url: '/env/alertRule/list',
     method: 'get',
     params
   });
@@ -12,7 +12,7 @@ export function fetchGetAlertRuleList(params: Api.Env.AlertRuleSearchParams) {
 /** 获取告警规则详情 */
 export function fetchGetAlertRuleInfo(id: CommonType.IdType) {
   return request<Api.Env.AlertRule>({
-    url: `/env/alert-rule/info/${id}`,
+    url: `/env/alertRule/${id}`,
     method: 'get'
   });
 }
@@ -20,7 +20,7 @@ export function fetchGetAlertRuleInfo(id: CommonType.IdType) {
 /** 创建告警规则 */
 export function fetchCreateAlertRule(data: Api.Env.AlertRuleOperateParams) {
   return request<null>({
-    url: '/env/alert-rule/create',
+    url: '/env/alertRule',
     method: 'post',
     data
   });
@@ -29,7 +29,7 @@ export function fetchCreateAlertRule(data: Api.Env.AlertRuleOperateParams) {
 /** 更新告警规则 */
 export function fetchUpdateAlertRule(data: Api.Env.AlertRuleOperateParams) {
   return request<null>({
-    url: '/env/alert-rule/update',
+    url: '/env/alertRule',
     method: 'put',
     data
   });
@@ -38,7 +38,7 @@ export function fetchUpdateAlertRule(data: Api.Env.AlertRuleOperateParams) {
 /** 删除告警规则 */
 export function fetchDeleteAlertRule(id: CommonType.IdType) {
   return request<null>({
-    url: `/env/alert-rule/delete/${id}`,
+    url: `/env/alertRule/${id}`,
     method: 'delete'
   });
 }
@@ -46,7 +46,7 @@ export function fetchDeleteAlertRule(id: CommonType.IdType) {
 /** 批量删除告警规则 */
 export function fetchBatchDeleteAlertRule(ids: CommonType.IdType[]) {
   return request<null>({
-    url: '/env/alert-rule/batch-delete',
+    url: '/env/alertRule/batch-delete',
     method: 'delete',
     data: ids
   });
@@ -55,7 +55,7 @@ export function fetchBatchDeleteAlertRule(ids: CommonType.IdType[]) {
 /** 更新告警规则状态 */
 export function fetchUpdateAlertRuleStatus(data: { id: CommonType.IdType; status: Api.Common.EnableStatus }) {
   return request<null>({
-    url: '/env/alert-rule/status',
+    url: '/env/alertRule/status',
     method: 'put',
     data
   });
