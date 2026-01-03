@@ -8,6 +8,7 @@ import StatusSwitch from '@/components/custom/status-switch.vue';
 import ButtonIcon from '@/components/custom/button-icon.vue';
 import AlertLogOperateDrawer from './modules/alert-log-operate-drawer.vue';
 import AlertLogSearch from './modules/alert-log-search.vue';
+import { f } from 'vue-router/dist/router-CWoNjPRp.mjs';
 
 const searchParams = ref<Api.Env.AlertLogSearchParams>({
   current: 1,
@@ -190,7 +191,7 @@ function handleResetSearch() {
           v-model:columns="columnChecks"
           :disabled-delete="checkedRowKeys.length === 0"
           :loading="loading"
-          :add-button="false"
+          :disabled-add="true"
           @delete="handleBatchDelete"
           @refresh="getData"
         />
