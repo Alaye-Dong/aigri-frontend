@@ -1,4 +1,5 @@
 import { localStg } from '@/utils/storage';
+import { getServiceBaseURL } from '@/utils/service';
 
 /**
  * Initiates a streaming chat request to the AI backend.
@@ -19,16 +20,19 @@ export function streamAIChat(
   (async () => {
     try {
       const token = localStg.get('token');
-      // Construct URL with query parameter
-      const baseUrl = 'http://localhost:9527/proxy-default';
-      const url = new URL(`${baseUrl}/ai/chat`);
+
+      const isHttpProxy = import.meta.env.DEV;
+      const { baseURL } = getServiceBaseURL(import.meta.env, isHttpProxy);
+
+      // Create URL relative to current origin if baseURL is relative (proxy), or absolute if production.
+      const url = new URL(`${baseURL}/ai/chat`, window.location.origin);
       url.searchParams.append('query', query);
 
       const response = await fetch(url.toString(), {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
-          Accept: 'text/event-stream' // Important for SSE
+          Accept: 'text/event-stream'
         },
         signal: controller.signal
       });
@@ -50,7 +54,6 @@ export function streamAIChat(
         const { done, value } = await reader.read();
 
         if (done) {
-          // Stream complete
           onChunk('', true);
           break;
         }
@@ -58,20 +61,11 @@ export function streamAIChat(
         const chunk = decoder.decode(value, { stream: true });
         buffer += chunk;
 
-        // Split buffer into lines
         const lines = buffer.split('\n');
-        // The last line might be incomplete, so we save it back to buffer
         buffer = lines.pop() || '';
 
         for (const line of lines) {
-          // Check for data line
           if (line.startsWith('data:')) {
-            // Extract content after "data:"
-            // We use substring(5) to remove "data:"
-            // We don't trim() immediately to preserve potential starting spaces in content
-            // but typical SSE sends "data: content", so a space might be there.
-            // valid formats: "data:content", "data: content"
-            // If the content is "你好", line is "data:你好". substring is "你好".
             const content = line.substring(5);
             onChunk(content, false);
           }
@@ -79,7 +73,6 @@ export function streamAIChat(
       }
     } catch (error: any) {
       if (error.name === 'AbortError') {
-        // Request aborted, ignore
         return;
       }
       console.error('API Error:', error);
