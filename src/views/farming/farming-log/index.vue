@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { NButton, NDivider, NTag } from 'naive-ui';
 import { fetchBatchDeleteFarmingLog, fetchGetFarmingLogList } from '@/service/api/farming';
-import { useNaivePaginatedTable, useTableOperate,defaultTransform } from '@/hooks/common/table';
+import { defaultTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
 import { $t } from '@/locales';
 import ButtonIcon from '@/components/custom/button-icon.vue';
 import FarmingLogSearch from './modules/farming-log-search.vue';
@@ -56,21 +56,27 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
       align: 'center',
       minWidth: 100,
       render: row => {
-        const operateTypeMap: Record<string, { text: string; type: 'success' | 'warning' | 'error' | 'default' | 'primary' | 'info' }> = {
-          '播种': { text: '播种', type: 'primary' },
-          '施肥': { text: '施肥', type: 'success' },
-          '灌溉': { text: '灌溉', type: 'info' },
-          '除草': { text: '除草', type: 'warning' },
-          '病虫害防治': { text: '病虫害防治', type: 'error' },
-          '收获': { text: '收获', type: 'success' },
-          '其他': { text: '其他', type: 'default' }
+        const operateTypeMap: Record<
+          string,
+          { text: string; type: 'success' | 'warning' | 'error' | 'default' | 'primary' | 'info' }
+        > = {
+          播种: { text: '播种', type: 'primary' },
+          施肥: { text: '施肥', type: 'success' },
+          灌溉: { text: '灌溉', type: 'info' },
+          除草: { text: '除草', type: 'warning' },
+          病虫害防治: { text: '病虫害防治', type: 'error' },
+          收获: { text: '收获', type: 'success' },
+          其他: { text: '其他', type: 'default' }
         };
 
         const typeValue = row.operateType;
         const typeInfo = operateTypeMap[typeValue] || { text: typeValue, type: 'default' };
 
         return (
-          <NTag type={typeInfo.type satisfies 'success' | 'warning' | 'error' | 'default' | 'primary' | 'info' | undefined} size="small">
+          <NTag
+            type={typeInfo.type satisfies 'success' | 'warning' | 'error' | 'default' | 'primary' | 'info' | undefined}
+            size="small"
+          >
             {typeInfo.text}
           </NTag>
         );
@@ -88,7 +94,7 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
       title: '成本(元)',
       align: 'center',
       minWidth: 100,
-      render: row => row.cost !== null ? `¥${row.cost}` : '-'
+      render: row => (row.cost !== null ? `¥${row.cost}` : '-')
     },
     {
       key: 'operateTime',

@@ -230,12 +230,7 @@ onMounted(() => {
             <NInput v-model:value="model.location" placeholder="请输入位置信息" />
           </NFormItem>
           <NFormItem label="土壤类型" path="soilType">
-            <NSelect
-              v-model:value="model.soilType"
-              :options="soilTypeOptions"
-              clearable
-              placeholder="请选择土壤类型"
-            />
+            <NSelect v-model:value="model.soilType" :options="soilTypeOptions" clearable placeholder="请选择土壤类型" />
           </NFormItem>
           <NFormItem label="描述" path="description">
             <NInput

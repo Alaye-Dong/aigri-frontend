@@ -1,6 +1,7 @@
 <script setup lang="tsx">
 import { ref } from 'vue';
 import { NButton, NDivider, NTag } from 'naive-ui';
+import { f } from 'vue-router/dist/router-CWoNjPRp.mjs';
 import { fetchBatchDeleteAlertLog, fetchGetAlertLogList, fetchUpdateAlertLogStatus } from '@/service/api/env';
 import { defaultTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
 import { $t } from '@/locales';
@@ -8,7 +9,6 @@ import StatusSwitch from '@/components/custom/status-switch.vue';
 import ButtonIcon from '@/components/custom/button-icon.vue';
 import AlertLogOperateDrawer from './modules/alert-log-operate-drawer.vue';
 import AlertLogSearch from './modules/alert-log-search.vue';
-import { f } from 'vue-router/dist/router-CWoNjPRp.mjs';
 
 const searchParams = ref<Api.Env.AlertLogSearchParams>({
   current: 1,

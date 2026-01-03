@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, toRaw } from 'vue';
 import { jsonClone } from '@sa/utils';
-import { useNaiveForm } from '@/hooks/common/form';
-import { $t } from '@/locales';
 import { fetchGetFarmlandList } from '@/service/api/farming';
 import { fetchGetUserList } from '@/service/api/system';
+import { useNaiveForm } from '@/hooks/common/form';
+import { $t } from '@/locales';
 
 defineOptions({
   name: 'FarmingLogSearch'
@@ -103,12 +103,7 @@ getUserOptions();
               />
             </NFormItemGi>
             <NFormItemGi span="24 s:12 m:6" label="操作人" path="userId" class="pr-24px">
-              <NSelect
-                v-model:value="model.userId"
-                placeholder="请选择操作人"
-                :options="userOptions"
-                clearable
-              />
+              <NSelect v-model:value="model.userId" placeholder="请选择操作人" :options="userOptions" clearable />
             </NFormItemGi>
             <NFormItemGi span="24 s:12 m:6" class="pr-24px">
               <NSpace class="w-full" justify="end">

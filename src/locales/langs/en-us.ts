@@ -257,7 +257,7 @@ const local: App.I18n.Schema = {
     system_user: 'User Management',
     farming: 'Farming',
     farming_crop: 'Crop Management',
-    'farming_farming-log':'Farming Log Management',
+    'farming_farming-log': 'Farming Log Management',
     farming_farmland: 'Farmland Management',
     env: 'Env Monitoring',
     env_device: 'Device Management',

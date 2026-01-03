@@ -2,8 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { jsonClone } from '@sa/utils';
 import { useLoading } from '@sa/hooks';
-import { fetchCreateCrop, fetchGetCropInfo, fetchUpdateCrop } from '@/service/api/farming';
-import { fetchGetFarmlandList } from '@/service/api/farming';
+import { fetchCreateCrop, fetchGetCropInfo, fetchGetFarmlandList, fetchUpdateCrop } from '@/service/api/farming';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { $t } from '@/locales';
 
@@ -201,12 +200,7 @@ onMounted(() => {
             />
           </NFormItem>
           <NFormItem label="状态" path="status">
-            <NSelect
-              v-model:value="model.status"
-              :options="cropStatusOptions"
-              clearable
-              placeholder="请选择作物状态"
-            />
+            <NSelect v-model:value="model.status" :options="cropStatusOptions" clearable placeholder="请选择作物状态" />
           </NFormItem>
         </NForm>
       </NSpin>

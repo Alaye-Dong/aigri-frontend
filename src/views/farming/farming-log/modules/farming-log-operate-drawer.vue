@@ -2,10 +2,14 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { jsonClone } from '@sa/utils';
 import { useLoading } from '@sa/hooks';
-import { fetchCreateFarmingLog, fetchGetFarmingLogInfo, fetchUpdateFarmingLog } from '@/service/api/farming';
-import { fetchGetFarmlandList } from '@/service/api/farming';
+import {
+  fetchCreateFarmingLog,
+  fetchGetCropList,
+  fetchGetFarmingLogInfo,
+  fetchGetFarmlandList,
+  fetchUpdateFarmingLog
+} from '@/service/api/farming';
 import { fetchGetUserList } from '@/service/api/system';
-import { fetchGetCropList } from '@/service/api/farming';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { $t } from '@/locales';
 
@@ -291,13 +295,7 @@ onMounted(() => {
             />
           </NFormItem>
           <NFormItem label="成本(元)" path="cost">
-            <NInputNumber
-              v-model:value="costNumber"
-              placeholder="请输入成本"
-              :precision="2"
-              :min="0"
-              class="w-full"
-            />
+            <NInputNumber v-model:value="costNumber" placeholder="请输入成本" :precision="2" :min="0" class="w-full" />
           </NFormItem>
           <NFormItem label="操作时间" path="operateTime">
             <NDatePicker

@@ -164,11 +164,7 @@ watch(visible, () => {
             <NInputNumber v-model:value="model.metricValue" placeholder="指标值" readonly />
           </NFormItem>
           <NFormItem label="处理状态" path="status">
-            <NSelect
-              v-model:value="model.status"
-              :options="statusOptions"
-              placeholder="处理状态"
-            />
+            <NSelect v-model:value="model.status" :options="statusOptions" placeholder="处理状态" />
           </NFormItem>
           <NFormItem label="创建时间" path="createTime">
             <NInput v-model:value="model.createTime" placeholder="创建时间" readonly />

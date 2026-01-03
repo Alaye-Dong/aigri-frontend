@@ -1,11 +1,15 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+import { EditorSender } from 'vue-element-plus-x';
 
+const senderValue = ref('');
+function handleSubmit() {}
 </script>
 
 <template>
-  <div>AI对话</div>
+  <div>
+    <EditorSender v-model="senderValue" @submit="handleSubmit" />
+  </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

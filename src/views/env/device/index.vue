@@ -134,9 +134,7 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
         return (
           <div class="flex-center gap-8px">
             {buttons.map((btn, index) => (
-              <>
-                {btn}
-              </>
+              <>{btn}</>
             ))}
           </div>
         );

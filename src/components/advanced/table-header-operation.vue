@@ -43,7 +43,7 @@ function refresh() {
   <NSpace :align="itemAlign" wrap justify="end" class="lt-sm:w-200px">
     <slot name="prefix"></slot>
     <slot name="default">
-      <NButton size="small" ghost type="primary" @click="add" :disabled="disabledAdd">
+      <NButton size="small" ghost type="primary" :disabled="disabledAdd" @click="add">
         <template #icon>
           <icon-ic-round-plus class="text-icon" />
         </template>

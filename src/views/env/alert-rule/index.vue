@@ -61,11 +61,11 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
       minWidth: 100,
       render: row => {
         const metricLabels: Record<string, string> = {
-          'air_temp': '空气温度',
-          'air_humidity': '空气湿度',
-          'soil_moisture': '土壤湿度',
-          'light_lux': '光照强度',
-          'co2_ppm': '二氧化碳浓度'
+          air_temp: '空气温度',
+          air_humidity: '空气湿度',
+          soil_moisture: '土壤湿度',
+          light_lux: '光照强度',
+          co2_ppm: '二氧化碳浓度'
         };
         return metricLabels[row.metricType] || row.metricType;
       }
@@ -91,14 +91,14 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
       minWidth: 80,
       render: row => {
         const severityLabels: Record<string, string> = {
-          'info': '信息',
-          'warning': '警告',
-          'danger': '危险'
+          info: '信息',
+          warning: '警告',
+          danger: '危险'
         };
         const severityType: Record<string, 'default' | 'primary' | 'info' | 'success' | 'warning' | 'error'> = {
-          'info': 'info',
-          'warning': 'warning',
-          'danger': 'error'
+          info: 'info',
+          warning: 'warning',
+          danger: 'error'
         };
         return (
           <NTag type={severityType[row.severity] || 'default'} size="small">

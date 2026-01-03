@@ -79,8 +79,9 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
           3: { text: '已废弃', type: 'error' }
         };
 
-        const statusValue = row.status !== null ? row.status as number : null;
-        const statusInfo = statusValue !== null && statusMap[statusValue] ? statusMap[statusValue] : { text: '未知', type: 'default' };
+        const statusValue = row.status !== null ? (row.status as number) : null;
+        const statusInfo =
+          statusValue !== null && statusMap[statusValue] ? statusMap[statusValue] : { text: '未知', type: 'default' };
         // FIXME 作物状态显示
         // return (
         //   <NTag type={statusInfo.type satisfies 'success' | 'warning' | 'error' | 'default' | 'primary' | 'info' | undefined} size="small">

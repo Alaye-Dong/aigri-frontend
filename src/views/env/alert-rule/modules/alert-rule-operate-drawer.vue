@@ -214,11 +214,7 @@ onMounted(() => {
             />
           </NFormItem>
           <NFormItem label="监测指标" path="metricType">
-            <NSelect
-              v-model:value="model.metricType"
-              :options="metricTypeOptions"
-              placeholder="请选择监测指标"
-            />
+            <NSelect v-model:value="model.metricType" :options="metricTypeOptions" placeholder="请选择监测指标" />
           </NFormItem>
           <NFormItem label="条件操作符" path="conditionOperator">
             <NSelect
@@ -231,19 +227,15 @@ onMounted(() => {
             <NInputNumber v-model:value="model.thresholdValue" :min="0" :step="0.01" placeholder="请输入阈值" />
           </NFormItem>
           <NFormItem label="告警级别" path="severity">
-            <NSelect
-              v-model:value="model.severity"
-              :options="severityOptions"
-              placeholder="请选择告警级别"
-            />
+            <NSelect v-model:value="model.severity" :options="severityOptions" placeholder="请选择告警级别" />
           </NFormItem>
           <NFormItem label="是否启用" path="isEnabled">
             <NSwitch
               :value="model.isEnabled ?? false"
-              @update:value="(value) => model.isEnabled = value"
               :checked-value="true"
               :unchecked-value="false"
               size="large"
+              @update:value="value => (model.isEnabled = value)"
             >
               <template #checked>启用</template>
               <template #unchecked>停用</template>

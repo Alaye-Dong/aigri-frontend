@@ -43,6 +43,6 @@ export function fetchUpdateDevice(data: Api.Env.DeviceOperateParams) {
 export function fetchBatchDeleteDevice(ids: CommonType.IdType[]) {
   return request<boolean>({
     url: `/env/device/${ids.join(',')}`,
-    method: 'delete',
+    method: 'delete'
   });
 }

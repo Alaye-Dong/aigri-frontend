@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { NButton, NDatePicker, NDrawer, NDrawerContent, NForm, NFormItem, NInput, NSelect, NSpin } from 'naive-ui';
+import { useLoading } from '@sa/hooks';
 import { fetchGetFarmlandList } from '@/service/api/farming';
 import { fetchCreateDevice, fetchGetDeviceInfo, fetchUpdateDevice } from '@/service/api/env';
-import { useLoading } from '@sa/hooks';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { $t } from '@/locales';
 
@@ -32,7 +32,7 @@ const title = computed(() => {
     add: '新增设备',
     edit: '编辑设备'
   };
-  return (titles[props.operateType]);
+  return titles[props.operateType];
 });
 
 type Model = Api.Env.DeviceOperateParams;

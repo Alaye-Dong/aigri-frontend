@@ -47,12 +47,7 @@ async function search() {
               <NInput v-model:value="model.ruleName" placeholder="请输入规则名称" />
             </NFormItemGi>
             <NFormItemGi span="24 s:12 m:6" label="农田名称" path="farmlandId" class="pr-24px">
-              <NSelect
-                v-model:value="model.farmlandId"
-                placeholder="请选择关联农田"
-                :options="[]"
-                filterable
-              />
+              <NSelect v-model:value="model.farmlandId" placeholder="请选择关联农田" :options="[]" filterable />
             </NFormItemGi>
             <NFormItemGi span="24 s:12 m:6" label="监测指标" path="metricType" class="pr-24px">
               <NSelect

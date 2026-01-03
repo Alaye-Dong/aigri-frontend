@@ -108,7 +108,7 @@ async function handleAccountLogin(account: Account) {
         </NButton>
       </div>
 
-      <NDivider class="text-14px text-red !m-0">{{ '测试环境快捷登录 正式环境需要删除' }}</NDivider>
+      <NDivider class="text-14px text-red !m-0">测试环境快捷登录 正式环境需要删除</NDivider>
       <div class="flex-center gap-12px">
         <NButton v-for="item in accounts" :key="item.key" type="primary" @click="handleAccountLogin(item)">
           {{ item.label }}

@@ -38,6 +38,6 @@ export function fetchDeleteAlertLog(id: CommonType.IdType) {
 export function fetchBatchDeleteAlertLog(ids: CommonType.IdType[]) {
   return request<null>({
     url: `/env/alertLog//${ids.join(',')}`,
-    method: 'delete',
+    method: 'delete'
   });
 }
