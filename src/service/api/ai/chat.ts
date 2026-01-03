@@ -20,7 +20,7 @@ export function streamAIChat(
     try {
       const token = localStg.get('token');
       // Construct URL with query parameter
-      const baseUrl = import.meta.env.VITE_SERVICE_BASE_URL || '';
+      const baseUrl = 'http://localhost:9527/proxy-default';
       const url = new URL(`${baseUrl}/ai/chat`);
       url.searchParams.append('query', query);
 
