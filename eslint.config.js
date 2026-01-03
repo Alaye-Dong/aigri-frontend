@@ -19,11 +19,9 @@ export default defineConfig(
         }
       ],
       'unocss/order-attributify': 'off',
-      '@typescript-eslint/no-unused-vars': 'warn',
       'no-unused-vars': 'warn',
-      '@typescript-eslint/no-unused-expressions': 'warn',
       'no-unused-expressions': 'warn',
-      'no-warning-comments': false
+      'no-warning-comments': 'off'
     }
   }
 );
