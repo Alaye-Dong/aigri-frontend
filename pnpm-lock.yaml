@@ -44,6 +44,9 @@ importers:
       echarts:
         specifier: 6.0.0
         version: 6.0.0
+      hook-fetch:
+        specifier: ^2.3.0
+        version: 2.3.0(react@19.2.3)(typescript-api-pro@0.0.6)(vue@3.5.26(typescript@5.9.3))
       json5:
         specifier: 2.2.3
         version: 2.2.3
@@ -2896,6 +2899,13 @@ packages:
     resolution: {integrity: sha512-Xwwo44whKBVCYoliBQwaPvtd/2tYFkRQtXDWj1nackaV2JPXx3L0+Jvd8/qCJ2p+ML0/XVkJ2q+Mr+UVdpJK5w==}
     engines: {node: '>=12.0.0'}
 
+  hook-fetch@2.3.0:
+    resolution: {integrity: sha512-EHIkNPq6lFlkewxKHNM9VhKhjLQsj7M4VpDlhgqsCSCQpKoTulrmvTIqTK+1PP6D/tNuFFtDLOtlV9mZXt3JwA==}
+    peerDependencies:
+      react: '>=19.1.0'
+      typescript-api-pro: '>=0.0.6'
+      vue: '>=3.5.16'
+
   hookable@5.5.3:
     resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
 
@@ -4008,6 +4018,10 @@ packages:
 
   rd@2.0.1:
     resolution: {integrity: sha512-/XdKU4UazUZTXFmI0dpABt8jSXPWcEyaGdk340KdHnsEOdkTctlX23aAK7ChQDn39YGNlAJr1M5uvaKt4QnpNw==}
+
+  react@19.2.3:
+    resolution: {integrity: sha512-Ku/hhYbVjOQnXDZFv2+RibmLFGwFdeeKHFcOTlrt7xplBnya5OGn/hIRDsqDiSUcfORsDC7MPxwork8jBwsIWA==}
+    engines: {node: '>=0.10.0'}
 
   readable-stream@3.6.2:
     resolution: {integrity: sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA==}
@@ -7879,6 +7893,14 @@ snapshots:
 
   highlight.js@11.11.1: {}
 
+  hook-fetch@2.3.0(react@19.2.3)(typescript-api-pro@0.0.6)(vue@3.5.26(typescript@5.9.3)):
+    dependencies:
+      qs: 6.14.0
+      radash: 12.1.1
+      react: 19.2.3
+      typescript-api-pro: 0.0.6
+      vue: 3.5.26(typescript@5.9.3)
+
   hookable@5.5.3: {}
 
   html-void-elements@3.0.0: {}
@@ -9139,6 +9161,8 @@ snapshots:
   rd@2.0.1:
     dependencies:
       '@types/node': 10.17.60
+
+  react@19.2.3: {}
 
   readable-stream@3.6.2:
     dependencies:
