@@ -20,6 +20,7 @@ export default defineConfig(
       ],
       'unocss/order-attributify': 'off',
       'no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-vars': 'warn',
       'no-unused-expressions': 'warn',
       'no-warning-comments': 'off'
     }
