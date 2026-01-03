@@ -260,8 +260,8 @@ const local: App.I18n.Schema = {
     'env_env-data': '环境数据',
     'env_alert-rule': '告警规则',
     'env_alert-log': '告警日志',
-    ai: 'AI支持',
-    ai_chat: 'AI对话'
+    ai: '智能支持',
+    ai_chat: '智能对话'
   },
   page: {
     login: {
