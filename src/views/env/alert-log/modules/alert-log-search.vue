@@ -57,7 +57,7 @@ async function search() {
             </NFormItemGi>
             <NFormItemGi span="24 s:12 m:6" label="处理状态" path="processStatus" class="pr-24px">
               <NSelect
-                v-model:value="model.processStatus"
+                v-model:value="model.status"
                 placeholder="处理状态...默认为全部"
                 :options="[
                   {
