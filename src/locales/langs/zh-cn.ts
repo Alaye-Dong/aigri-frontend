@@ -259,7 +259,9 @@ const local: App.I18n.Schema = {
     env_device: '设备管理',
     'env_env-data': '环境数据',
     'env_alert-rule': '告警规则',
-    'env_alert-log': '告警日志'
+    'env_alert-log': '告警日志',
+    ai: 'AI支持',
+    ai_chat: 'AI对话'
   },
   page: {
     login: {

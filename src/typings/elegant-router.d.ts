@@ -20,6 +20,8 @@ declare module "@elegant-router/types" {
     "403": "/403";
     "404": "/404";
     "500": "/500";
+    "ai": "/ai";
+    "ai_chat": "/ai/chat";
     "env": "/env";
     "env_alert-log": "/env/alert-log";
     "env_alert-rule": "/env/alert-rule";
@@ -68,6 +70,7 @@ declare module "@elegant-router/types" {
     | "403"
     | "404"
     | "500"
+    | "ai"
     | "env"
     | "farming"
     | "home"
@@ -95,6 +98,7 @@ declare module "@elegant-router/types" {
     | "500"
     | "iframe-page"
     | "login"
+    | "ai_chat"
     | "env_alert-log"
     | "env_alert-rule"
     | "env_device"
