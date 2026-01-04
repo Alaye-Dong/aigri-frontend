@@ -12,10 +12,12 @@ interface Message {
 }
 
 const messageList = ref<Message[]>([]);
-const inputValue = ref('');
+const senderValue = ref('');
 const loading = ref(false);
 const scrollbarRef = ref<InstanceType<typeof NScrollbar> | null>(null);
 let abortController: AbortController | null = null;
+
+const senderRef = ref();
 
 const scrollToBottom = async () => {
   await nextTick();
@@ -25,14 +27,14 @@ const scrollToBottom = async () => {
 };
 
 const handleSend = async (payload?: { text?: string; value?: string }) => {
-  const text = payload?.text || payload?.value || inputValue.value;
+  const text = payload?.text || payload?.value || senderValue.value;
 
   if (!text || !text.trim()) return;
   if (loading.value) return;
 
   const userQuery = text.trim();
 
-  inputValue.value = '';
+  senderRef.value.clear();
 
   messageList.value.push({
     id: Date.now().toString(),
@@ -124,10 +126,11 @@ onUnmounted(() => {
       <!-- Input Area -->
       <div class="border-t border-gray-100 p-4 dark:border-gray-700">
         <EditorSender
-          v-model="inputValue"
+          ref="senderRef"
+          v-model="senderValue"
           :loading="loading"
           :disabled="loading"
-          placeholder="Type a message to chat with AI..."
+          placeholder="有什么我能帮您的吗？🍀"
           @submit="handleSend"
         />
       </div>
