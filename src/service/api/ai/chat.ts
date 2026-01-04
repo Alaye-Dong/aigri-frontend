@@ -48,7 +48,10 @@ async function processChatStream(
   while (true) {
     const { done, value } = await reader.read();
 
+    console.log('Reader done:', done, 'value length:', value?.length); // Debug
+
     if (done) {
+      console.log('Stream ended by reader.done');
       onChunk('', true);
       break;
     }
@@ -62,9 +65,10 @@ async function processChatStream(
     for (const line of lines) {
       if (line.trim() === '') {
         emptyLineCount++;
-        // The user specified that "continuous two empty lines" is the end signal.
-        // But logic was updated to >= 1 in recent edit.
-        if (emptyLineCount >= 1) {
+        console.log('Empty line count:', emptyLineCount); // Debug
+        // SSE standard: single empty line = message separator, two empty lines = stream end
+        if (emptyLineCount >= 2) {
+          console.log('Stream ended by double empty lines');
           onChunk('', true);
           return;
         }
@@ -72,6 +76,14 @@ async function processChatStream(
         emptyLineCount = 0;
         if (line.startsWith('data:')) {
           const content = line.substring(5);
+
+          // Check for explicit stream end marker
+          if (content === '[DONE]') {
+            console.log('Stream ended by [DONE] marker');
+            onChunk('', true);
+            return;
+          }
+
           onChunk(content, false);
         }
       }

@@ -1,30 +1,27 @@
 <script setup lang="ts">
 import { nextTick, onUnmounted, ref } from 'vue';
-import { NCard, NScrollbar, NSpin } from 'naive-ui';
-import { EditorSender, XMarkdown } from 'vue-element-plus-x';
+import type { NScrollbar } from 'naive-ui';
+import { NCard, NSpin } from 'naive-ui';
+import { Bubble, BubbleList, EditorSender, XMarkdown } from 'vue-element-plus-x';
+import type { BubbleListItemProps, BubbleListProps } from 'vue-element-plus-x/types/BubbleList';
+import type { BubbleProps } from 'vue-element-plus-x/types/Bubble';
 import { streamAIChat } from '@/service/api/ai/chat';
 
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
+type MessageItem = BubbleProps & {
+  id: number;
+  role: 'user' | 'ai';
   content: string;
   loading?: boolean;
-}
+};
 
-const messageList = ref<Message[]>([]);
 const senderValue = ref('');
 const loading = ref(false);
-const scrollbarRef = ref<InstanceType<typeof NScrollbar> | null>(null);
+
 let abortController: AbortController | null = null;
 
 const senderRef = ref();
-
-const scrollToBottom = async () => {
-  await nextTick();
-  if (scrollbarRef.value) {
-    scrollbarRef.value.scrollTo({ top: 100000, behavior: 'smooth' });
-  }
-};
+const bubbleListRef = ref();
+const bubbleItems = ref<MessageItem[]>([]);
 
 const handleSend = async (payload?: { text?: string; value?: string }) => {
   const text = payload?.text || payload?.value || senderValue.value;
@@ -32,51 +29,66 @@ const handleSend = async (payload?: { text?: string; value?: string }) => {
   if (!text || !text.trim()) return;
   if (loading.value) return;
 
+  // Add user message
+  addMessage(text, true);
+
   const userQuery = text.trim();
 
   senderRef.value.clear();
+  bubbleListRef.value.scrollToBottom();
 
-  messageList.value.push({
-    id: Date.now().toString(),
-    role: 'user',
-    content: userQuery
-  });
-
-  await scrollToBottom();
-
-  const aiMessageId = (Date.now() + 1).toString();
-  messageList.value.push({
+  // Create AI message with proper properties
+  const aiMessageId = Date.now() + 1;
+  const aiMessage: MessageItem = {
     id: aiMessageId,
-    role: 'assistant',
+    role: 'ai',
+    placement: 'start',
+    isMarkdown: true,
+    loading: true,
     content: '',
-    loading: true
-  });
+    noStyle: true
+  };
+  bubbleItems.value.push(aiMessage);
 
   loading.value = true;
-  await scrollToBottom();
+  bubbleListRef.value.scrollToBottom();
 
   abortController = streamAIChat(
     userQuery,
     (chunk, isDone) => {
-      const msgIndex = messageList.value.findIndex(m => m.id === aiMessageId);
+      console.log('Received chunk:', chunk, 'isDone:', isDone); // Debug log
+      const msgIndex = bubbleItems.value.findIndex(m => m.id === aiMessageId);
       if (msgIndex !== -1) {
         if (chunk) {
-          messageList.value[msgIndex].content += chunk;
+          // Force reactivity by replacing the entire object
+          const currentMsg = bubbleItems.value[msgIndex];
+          bubbleItems.value.splice(msgIndex, 1, {
+            ...currentMsg,
+            content: currentMsg.content + chunk
+          });
         }
         if (isDone) {
-          messageList.value[msgIndex].loading = false;
+          const currentMsg = bubbleItems.value[msgIndex];
+          bubbleItems.value.splice(msgIndex, 1, {
+            ...currentMsg,
+            loading: false
+          });
           loading.value = false;
           abortController = null;
         }
-        scrollToBottom();
+        bubbleListRef.value.scrollToBottom();
       }
     },
     error => {
       window.$message?.error(`Failed to get response: ${error.message}`);
-      const msgIndex = messageList.value.findIndex(m => m.id === aiMessageId);
+      const msgIndex = bubbleItems.value.findIndex(m => m.id === aiMessageId);
       if (msgIndex !== -1) {
-        messageList.value[msgIndex].loading = false;
-        messageList.value[msgIndex].content += '\n\n*(Error: Connection terminated)*';
+        const currentMsg = bubbleItems.value[msgIndex];
+        bubbleItems.value.splice(msgIndex, 1, {
+          ...currentMsg,
+          loading: false,
+          content: currentMsg.content + '\n\n*(Error: Connection terminated)*'
+        });
       }
       loading.value = false;
       abortController = null;
@@ -89,6 +101,21 @@ onUnmounted(() => {
     abortController.abort();
   }
 });
+
+// 添加消息 - 维护聊天记录
+function addMessage(message: string, isUser: boolean) {
+  const i = bubbleItems.value.length;
+  const obj: MessageItem = {
+    id: i,
+    role: isUser ? 'user' : 'ai',
+    placement: isUser ? 'end' : 'start',
+    isMarkdown: !isUser,
+    loading: !isUser,
+    content: message || '',
+    noStyle: !isUser
+  };
+  bubbleItems.value.push(obj);
+}
 </script>
 
 <template>
@@ -96,31 +123,16 @@ onUnmounted(() => {
     <NCard class="chat-card flex flex-col flex-1 overflow-hidden">
       <!-- Chat Area -->
       <div class="relative flex-1 overflow-hidden">
-        <NScrollbar ref="scrollbarRef" class="p-4">
-          <div class="flex flex-col gap-6">
-            <div
-              v-for="msg in messageList"
-              :key="msg.id"
-              class="w-full flex"
-              :class="msg.role === 'user' ? 'justify-end' : 'justify-start'"
-            >
-              <div
-                class="max-w-[80%] rounded-lg p-3 text-sm leading-relaxed"
-                :class="[
-                  msg.role === 'user'
-                    ? 'bg-primary text-white rounded-br-none'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-bl-none'
-                ]"
-              >
-                <XMarkdown v-if="msg.content" :markdown="msg.content" />
-                <div v-if="msg.loading && !msg.content" class="h-6 flex items-center gap-1">
-                  <NSpin size="small" />
-                  <span class="text-xs opacity-60">Thinking...</span>
-                </div>
-              </div>
+        <BubbleList ref="bubbleListRef" :list="bubbleItems" class="p-4">
+          <template #content="{ item }">
+            <!-- ai 内容走 markdown -->
+            <XMarkdown v-if="item.content && item.role === 'ai'" :markdown="item.content" />
+            <!-- user 内容 纯文本 -->
+            <div v-if="item.content && item.role === 'user'">
+              {{ item.content }}
             </div>
-          </div>
-        </NScrollbar>
+          </template>
+        </BubbleList>
       </div>
 
       <!-- Input Area -->
@@ -144,17 +156,5 @@ onUnmounted(() => {
   flex-direction: column;
   height: 100%;
   padding: 0;
-}
-
-:deep(.x-markdown) {
-  background: transparent;
-  font-size: inherit;
-  color: inherit;
-}
-.bg-primary :deep(.x-markdown) {
-  color: white;
-}
-.bg-primary :deep(.x-markdown code) {
-  color: #333;
 }
 </style>
