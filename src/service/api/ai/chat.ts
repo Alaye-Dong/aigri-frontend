@@ -43,7 +43,6 @@ async function processChatStream(
 
   const decoder = new TextDecoder('utf-8');
   let buffer = '';
-  let emptyLineCount = 0;
 
   while (true) {
     const { done, value } = await reader.read();
@@ -63,29 +62,17 @@ async function processChatStream(
     buffer = lines.pop() || '';
 
     for (const line of lines) {
-      if (line.trim() === '') {
-        emptyLineCount++;
-        console.log('Empty line count:', emptyLineCount); // Debug
-        // SSE standard: single empty line = message separator, two empty lines = stream end
-        if (emptyLineCount >= 2) {
-          console.log('Stream ended by double empty lines');
+      if (line.startsWith('data:')) {
+        const content = line.substring(5);
+
+        // Check for explicit stream end marker
+        if (content === '[DONE]') {
+          console.log('Stream ended by [DONE] marker');
           onChunk('', true);
           return;
         }
-      } else {
-        emptyLineCount = 0;
-        if (line.startsWith('data:')) {
-          const content = line.substring(5);
 
-          // Check for explicit stream end marker
-          if (content === '[DONE]') {
-            console.log('Stream ended by [DONE] marker');
-            onChunk('', true);
-            return;
-          }
-
-          onChunk(content, false);
-        }
+        onChunk(content, false);
       }
     }
   }
