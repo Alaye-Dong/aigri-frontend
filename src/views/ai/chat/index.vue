@@ -2,7 +2,7 @@
 import { nextTick, onUnmounted, ref } from 'vue';
 import type { NScrollbar } from 'naive-ui';
 import { NCard, NSpin } from 'naive-ui';
-import { Bubble, BubbleList, EditorSender, XMarkdown } from 'vue-element-plus-x';
+import { Bubble, BubbleList, EditorSender, Typewriter, XMarkdown } from 'vue-element-plus-x';
 import type { BubbleListItemProps, BubbleListProps } from 'vue-element-plus-x/types/BubbleList';
 import type { BubbleProps } from 'vue-element-plus-x/types/Bubble';
 import { streamAIChat } from '@/service/api/ai/chat';
@@ -87,7 +87,7 @@ const handleSend = async (payload?: { text?: string; value?: string }) => {
         bubbleItems.value.splice(msgIndex, 1, {
           ...currentMsg,
           loading: false,
-          content: currentMsg.content + '\n\n*(Error: Connection terminated)*'
+          content: `${currentMsg.content}\n\n*(Error: Connection terminated)*`
         });
       }
       loading.value = false;
@@ -126,7 +126,7 @@ function addMessage(message: string, isUser: boolean) {
         <BubbleList ref="bubbleListRef" :list="bubbleItems" class="p-4">
           <template #content="{ item }">
             <!-- ai 内容走 markdown -->
-            <XMarkdown v-if="item.content && item.role === 'ai'" :markdown="item.content" />
+            <Typewriter v-if="item.content && item.role === 'ai'" :content="item.content" typing />
             <!-- user 内容 纯文本 -->
             <div v-if="item.content && item.role === 'user'">
               {{ item.content }}
