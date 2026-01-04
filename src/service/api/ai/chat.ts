@@ -49,6 +49,7 @@ export function streamAIChat(
 
       const decoder = new TextDecoder('utf-8');
       let buffer = '';
+      let emptyLineCount = 0;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -65,9 +66,20 @@ export function streamAIChat(
         buffer = lines.pop() || '';
 
         for (const line of lines) {
-          if (line.startsWith('data:')) {
-            const content = line.substring(5);
-            onChunk(content, false);
+          if (line.trim() === '') {
+            emptyLineCount++;
+            // The user specified that "continuous two empty lines" is the end signal.
+            // 2 consecutive empty lines in parsed output implies \n\n\n sequence.
+            if (emptyLineCount >= 1) {
+              onChunk('', true);
+              return;
+            }
+          } else {
+            emptyLineCount = 0;
+            if (line.startsWith('data:')) {
+              const content = line.substring(5);
+              onChunk(content, false);
+            }
           }
         }
       }
