@@ -81,6 +81,7 @@
     "@types/nprogress": "0.2.3",
     "@unocss/eslint-config": "66.5.10",
     "@unocss/preset-icons": "66.5.10",
+    "@unocss/preset-typography": "^66.5.12",
     "@unocss/preset-uno": "66.5.10",
     "@unocss/transformer-directives": "66.5.10",
     "@unocss/transformer-variant-group": "66.5.10",

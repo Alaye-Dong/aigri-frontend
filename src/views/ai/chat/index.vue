@@ -122,18 +122,27 @@ function addMessage(message: string, isUser: boolean) {
   <div class="h-full flex flex-col gap-4 overflow-hidden p-4">
     <NCard class="chat-card flex flex-col flex-1 overflow-hidden">
       <!-- Chat Area -->
-      <div class="relative flex-1 overflow-hidden">
-        <BubbleList ref="bubbleListRef" :list="bubbleItems" class="p-4">
-          <template #content="{ item }">
-            <!-- ai 内容走 markdown -->
-            <Typewriter v-if="item.content && item.role === 'ai'" :content="item.content" typing />
-            <!-- user 内容 纯文本 -->
-            <div v-if="item.content && item.role === 'user'">
-              {{ item.content }}
-            </div>
-          </template>
-        </BubbleList>
-      </div>
+      <BubbleList ref="bubbleListRef" :list="bubbleItems" class="p-4">
+        <template #content="{ item }">
+          <!-- ai 内容走 markdown -->
+          <Typewriter
+            v-if="item.content && item.role === 'ai'"
+            :content="item.content"
+            typing
+            :is-markdown="true"
+            class="markdown-body"
+            :themes="{ light: 'github-light', dark: 'github-dark' }"
+            default-theme-mode="light"
+          />
+          <!-- 打印item.content到控制台 -->
+          <pre v-if="item.content && item.role === 'ai'">{{ item.content }}</pre>
+          <XMarkdown v-if="item.content && item.role === 'ai'" :markdown="item.content" />
+          <!-- user 内容 纯文本 -->
+          <div v-if="item.content && item.role === 'user'">
+            {{ item.content }}
+          </div>
+        </template>
+      </BubbleList>
 
       <!-- Input Area -->
       <div class="border-t border-gray-100 p-4 dark:border-gray-700">
