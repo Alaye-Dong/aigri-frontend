@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { send } from 'vite';
 import { nextTick, onUnmounted, ref } from 'vue';
 import type { NScrollbar } from 'naive-ui';
 import { NCard, NSpin } from 'naive-ui';
 import { Bubble, BubbleList, EditorSender, Typewriter, XMarkdown } from 'vue-element-plus-x';
 import type { BubbleListItemProps, BubbleListProps } from 'vue-element-plus-x/types/BubbleList';
 import type { BubbleProps } from 'vue-element-plus-x/types/Bubble';
-import { streamAIChat } from '@/service/api/ai/chat';
+import { hookFetchChatStream } from '@/service/api/ai/chat';
 
 type MessageItem = BubbleProps & {
   id: number;
@@ -14,93 +15,57 @@ type MessageItem = BubbleProps & {
   loading?: boolean;
 };
 
-const senderValue = ref('');
 const loading = ref(false);
-
-let abortController: AbortController | null = null;
 
 const senderRef = ref();
 const bubbleListRef = ref();
 const bubbleItems = ref<MessageItem[]>([]);
 
-const handleSend = async (payload?: { text?: string; value?: string }) => {
-  const text = payload?.text || payload?.value || senderValue.value;
-
-  if (!text || !text.trim()) return;
-  if (loading.value) return;
-
+async function handleSend() {
+  // senderValue.value = '';
+  // senderRef.value.clear();
   // Add user message
-  addMessage(text, true);
+  const senderTextValue = senderRef.value.getCurrentValue().text;
+  if (!senderTextValue) return;
 
-  const userQuery = text.trim();
+  addMessage(senderTextValue, true);
 
-  senderRef.value.clear();
-  bubbleListRef.value.scrollToBottom();
-
-  // Create AI message with proper properties
-  const aiMessageId = Date.now() + 1;
-  const aiMessage: MessageItem = {
-    id: aiMessageId,
-    role: 'ai',
-    placement: 'start',
-    isMarkdown: true,
-    loading: true,
-    content: '',
-    noStyle: true
-  };
-  bubbleItems.value.push(aiMessage);
+  // Add AI message placeholder and get reference
+  const aiMessage = addMessage('', false);
 
   loading.value = true;
   bubbleListRef.value.scrollToBottom();
 
-  abortController = streamAIChat(
-    userQuery,
-    (chunk, isDone) => {
-      console.log('Received chunk:', chunk, 'isDone:', isDone); // Debug log
-      const msgIndex = bubbleItems.value.findIndex(m => m.id === aiMessageId);
-      if (msgIndex !== -1) {
-        if (chunk) {
-          // Force reactivity by replacing the entire object
-          const currentMsg = bubbleItems.value[msgIndex];
-          bubbleItems.value.splice(msgIndex, 1, {
-            ...currentMsg,
-            content: currentMsg.content + chunk
-          });
-        }
-        if (isDone) {
-          const currentMsg = bubbleItems.value[msgIndex];
-          bubbleItems.value.splice(msgIndex, 1, {
-            ...currentMsg,
-            loading: false
-          });
-          loading.value = false;
-          abortController = null;
-        }
-        bubbleListRef.value.scrollToBottom();
-      }
-    },
-    error => {
-      window.$message?.error(`Failed to get response: ${error.message}`);
-      const msgIndex = bubbleItems.value.findIndex(m => m.id === aiMessageId);
-      if (msgIndex !== -1) {
-        const currentMsg = bubbleItems.value[msgIndex];
-        bubbleItems.value.splice(msgIndex, 1, {
-          ...currentMsg,
-          loading: false,
-          content: `${currentMsg.content}\n\n*(Error: Connection terminated)*`
-        });
-      }
-      loading.value = false;
-      abortController = null;
-    }
-  );
-};
+  try {
+    for await (const chunk of hookFetchChatStream(senderTextValue).stream()) {
+      let result = chunk.result || '';
+      console.log('Parsed SSE data:', result);
 
-onUnmounted(() => {
-  if (abortController) {
-    abortController.abort();
+      // 类型守卫，确保 result 是字符串
+      if (typeof result === 'string' && result.startsWith('data:')) {
+        result = result.slice(5);
+      }
+
+      if (typeof result === 'string' && result.trim() === '') {
+        result = '\n';
+      }
+
+      // // Check for done signal
+      if (typeof result === 'string' && result.trim() === '[DONE]') {
+        break;
+      }
+
+      aiMessage.content += typeof result === 'string' ? result : JSON.stringify(result);
+      bubbleListRef.value.scrollToBottom();
+    }
+  } catch (error) {
+    console.error('Chat stream error:', error);
+    aiMessage.content += '\n[Network Error]';
+  } finally {
+    loading.value = false;
+    aiMessage.loading = false;
   }
-});
+}
 
 // 添加消息 - 维护聊天记录
 function addMessage(message: string, isUser: boolean) {
@@ -115,6 +80,7 @@ function addMessage(message: string, isUser: boolean) {
     noStyle: !isUser
   };
   bubbleItems.value.push(obj);
+  return obj;
 }
 </script>
 
@@ -134,7 +100,6 @@ function addMessage(message: string, isUser: boolean) {
             :themes="{ light: 'github-light', dark: 'github-dark' }"
             default-theme-mode="light"
           />
-          <!-- 打印item.content到控制台 -->
           <pre v-if="item.content && item.role === 'ai'">{{ item.content }}</pre>
           <XMarkdown v-if="item.content && item.role === 'ai'" :markdown="item.content" />
           <!-- user 内容 纯文本 -->
@@ -148,7 +113,6 @@ function addMessage(message: string, isUser: boolean) {
       <div class="border-t border-gray-100 p-4 dark:border-gray-700">
         <EditorSender
           ref="senderRef"
-          v-model="senderValue"
           :loading="loading"
           :disabled="loading"
           placeholder="有什么我能帮您的吗？🍀"
