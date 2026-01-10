@@ -26,7 +26,6 @@ async function handleSend() {
 
   addMessage(senderTextValue, true);
 
-  // Add AI message placeholder and get reference
   const aiMessage = addMessage('', false);
 
   loading.value = true;
@@ -37,7 +36,7 @@ async function handleSend() {
       let result = chunk.result || '';
       // console.log('Parsed SSE data:', result);
 
-      // 类型守卫，确保 result 是字符串
+      // 确保 result 是字符串
       if (typeof result === 'string' && result.startsWith('data:')) {
         result = result.slice(5);
       }
@@ -53,12 +52,13 @@ async function handleSend() {
       const text = typeof result === 'string' ? result : JSON.stringify(result);
 
       aiMessage.content += text;
-      loading.value = false;
       aiMessage.loading = false;
     }
     bubbleListRef.value.scrollToBottom();
   } catch (error) {
     aiMessage.content += '\n[Network Error]';
+  } finally {
+    loading.value = false;
   }
 }
 
