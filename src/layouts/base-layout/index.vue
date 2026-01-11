@@ -149,9 +149,11 @@ function getSiderAndCollapsedWidth(isCollapsed: boolean) {
     <GlobalMenu />
     <GlobalContent />
     <ThemeDrawer />
-    <template #footer>
+    <!--
+ <template #footer>
       <GlobalFooter />
     </template>
+-->
   </AdminLayout>
 </template>
 
