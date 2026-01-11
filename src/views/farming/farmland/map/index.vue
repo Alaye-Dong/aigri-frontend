@@ -35,7 +35,8 @@ const initMap = () => {
   // 创建地图实例，中心点设置为中国某个位置（可根据实际需求调整）
   map = L.map(mapContainer.value, {
     maxZoom: 22, // 允许用户放大到的最大级别
-    minZoom: 3 // 最小缩放级别
+    minZoom: 3, // 最小缩放级别
+    attributionControl: false // 禁用右下角版权信息
   }).setView([39.9042, 116.4074], 13);
 
   // 添加高德卫星影像图层
