@@ -33,12 +33,26 @@ const initMap = () => {
   if (!mapContainer.value) return;
 
   // 创建地图实例，中心点设置为中国某个位置（可根据实际需求调整）
-  map = L.map(mapContainer.value).setView([39.9042, 116.4074], 13);
+  map = L.map(mapContainer.value, {
+    maxZoom: 22, // 允许用户放大到的最大级别
+    minZoom: 3 // 最小缩放级别
+  }).setView([39.9042, 116.4074], 13);
 
   // 添加高德卫星影像图层
   L.tileLayer('http://webst02.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}', {
-    maxZoom: 19,
-    attribution: '© 高德地图'
+    maxNativeZoom: 18, // 高德卫星图实际的最大缩放级别
+    maxZoom: 22, // 允许放大到 22 级，超过 18 级后会放大已有图像
+    minZoom: 3,
+    attribution: '© 高德地图',
+    errorTileUrl: '' // 加载失败时不显示错误图片
+  }).addTo(map);
+
+  // 叠加路网标注图层（可选）
+  L.tileLayer('http://webst02.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}', {
+    maxNativeZoom: 18,
+    maxZoom: 22,
+    minZoom: 3,
+    errorTileUrl: ''
   }).addTo(map);
 
   // 创建绘制图层组
