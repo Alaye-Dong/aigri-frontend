@@ -27,6 +27,7 @@ const farmlandForm = ref<FarmlandData>({
 });
 
 const isDrawing = ref(false);
+const vertexCount = ref(0); // 当前绘制的顶点数量
 
 // 初始化地图
 const initMap = () => {
@@ -65,8 +66,10 @@ const initMap = () => {
     position: 'topright',
     draw: {
       polygon: {
-        allowIntersection: false,
-        showArea: true,
+        allowIntersection: false, // 不允许自相交
+        showArea: false,          // 禁用内置面积显示（避免 leaflet-draw bug）
+        metric: true,             // 使用公制单位
+        repeatMode: false,        // 禁用重复模式
         drawError: {
           color: '#e74c3c',
           message: '<strong>错误!</strong> 不能自相交!'
@@ -75,7 +78,15 @@ const initMap = () => {
           color: '#3388ff',
           weight: 3,
           fillOpacity: 0.3
-        }
+        },
+        icon: new L.DivIcon({
+          iconSize: new L.Point(8, 8),
+          className: 'leaflet-div-icon leaflet-editing-icon'
+        }),
+        touchIcon: new L.DivIcon({
+          iconSize: new L.Point(20, 20),
+          className: 'leaflet-div-icon leaflet-editing-icon leaflet-touch-icon'
+        })
       },
       polyline: false,
       circle: false,
@@ -89,16 +100,18 @@ const initMap = () => {
     }
   });
 
-  map.addLayer(drawnItems);
   map.addControl(drawControl);
+  console.log('绘制控件已初始化');
 
   // 监听绘制完成事件
   map.on(L.Draw.Event.CREATED, (event: any) => {
+    console.log('绘制完成事件触发', event);
     const layer = event.layer;
     drawnItems?.addLayer(layer);
 
     // 获取坐标点
     const latlngs = layer.getLatLngs()[0]; // 多边形的坐标数组
+    console.log('坐标点数量:', latlngs.length);
     const coordinates: Array<[number, number]> = latlngs.map((latlng: L.LatLng) => [latlng.lat, latlng.lng]);
 
     // 计算面积（平方米）
@@ -113,12 +126,22 @@ const initMap = () => {
 
   // 监听绘制开始
   map.on(L.Draw.Event.DRAWSTART, () => {
+    console.log('开始绘制');
     isDrawing.value = true;
+    vertexCount.value = 0; // 重置顶点计数
   });
 
-  // 监听绘制取消
+  // 监听绘制停止
   map.on(L.Draw.Event.DRAWSTOP, () => {
+    console.log('停止绘制');
     isDrawing.value = false;
+    vertexCount.value = 0; // 重置顶点计数
+  });
+
+  // 监听绘制顶点事件
+  map.on(L.Draw.Event.DRAWVERTEX, (event: any) => {
+    vertexCount.value++;
+    console.log('添加顶点，当前顶点数:', vertexCount.value);
   });
 
   // 监听删除事件
@@ -210,7 +233,10 @@ onUnmounted(() => {
         <!-- 地图容器 -->
         <div class="map-wrapper">
           <div ref="mapContainer" class="map-container"></div>
-          <div v-if="isDrawing" class="drawing-tip">点击地图添加顶点，双击完成绘制</div>
+          <div v-if="isDrawing" class="drawing-tip">
+            <div class="tip-text">点击地图添加顶点，双击完成绘制</div>
+            <div class="tip-count">已添加 {{ vertexCount }} 个顶点</div>
+          </div>
         </div>
 
         <!-- 右侧信息面板 -->
@@ -304,15 +330,28 @@ onUnmounted(() => {
   top: 16px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(51, 136, 255, 0.9);
+  background: rgba(51, 136, 255, 0.95);
   color: white;
-  padding: 12px 24px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
+  padding: 14px 28px;
+  border-radius: 8px;
   z-index: 1000;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   animation: pulse 2s ease-in-out infinite;
+  text-align: center;
+  min-width: 280px;
+}
+
+.tip-text {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.tip-count {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffd700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 @keyframes pulse {
@@ -407,4 +446,43 @@ onUnmounted(() => {
 .info-panel::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+/* Leaflet Draw 自定义样式 */
+:deep(.leaflet-draw-tooltip) {
+  background: rgba(51, 136, 255, 0.9);
+  border: none;
+  color: white;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+
+:deep(.leaflet-draw-tooltip-single) {
+  background: rgba(51, 136, 255, 0.9);
+}
+
+:deep(.leaflet-draw-tooltip-subtext) {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* 绘制顶点样式 */
+:deep(.leaflet-editing-icon) {
+  border-radius: 50%;
+  border: 2px solid #3388ff;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+:deep(.leaflet-marker-icon) {
+  border: 2px solid #3388ff !important;
+  background: white !important;
+}
+
+/* 中间点样式 */
+:deep(.leaflet-draw-guide-dash) {
+  stroke-dasharray: 5, 10;
+  stroke: #3388ff;
+  stroke-width: 2;
+}
+
 </style>
