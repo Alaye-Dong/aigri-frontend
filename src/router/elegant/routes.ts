@@ -151,7 +151,29 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'farming_farmland',
           i18nKey: 'route.farming_farmland',
           icon: 'material-symbols:backup-table'
-        }
+        },
+        children: [
+          {
+            name: 'farming_farmland_list',
+            path: '/farming/farmland/list',
+            component: 'view.farming_farmland_list',
+            meta: {
+              title: 'farming_farmland_list',
+              i18nKey: 'route.farming_farmland_list',
+              icon: 'mdi:table-large'
+            }
+          },
+          {
+            name: 'farming_farmland_map',
+            path: '/farming/farmland/map',
+            component: 'view.farming_farmland_map',
+            meta: {
+              title: 'farming_farmland_map',
+              i18nKey: 'route.farming_farmland_map',
+              icon: 'mdi:map-legend'
+            }
+          }
+        ]
       }
     ]
   },

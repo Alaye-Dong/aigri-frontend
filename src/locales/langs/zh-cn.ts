@@ -255,6 +255,8 @@ const local: App.I18n.Schema = {
     farming_crop: '作物管理',
     'farming_farming-log': '农事日志',
     farming_farmland: '田块管理',
+    farming_farmland_list: '田块列表',
+    farming_farmland_map: '田块地图',
     env: '环境监测',
     env_device: '设备管理',
     'env_env-data': '环境数据',

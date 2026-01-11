@@ -136,7 +136,7 @@ const areaSizeNumber = computed<number | null>({
     }
     // 将字符串转换为数字
     const num = Number(value);
-    return isNaN(num) ? null : num;
+    return Number.isNaN(num) ? null : num;
   },
   set(value) {
     // 设置值时，直接使用数字或 null
