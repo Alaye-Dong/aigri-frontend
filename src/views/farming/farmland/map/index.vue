@@ -91,7 +91,7 @@ const initMap = () => {
     maxZoom: 22, // 允许用户放大到的最大级别
     minZoom: 3, // 最小缩放级别
     attributionControl: false // 禁用右下角版权信息
-  }).setView([39.9042, 116.4074], 13);
+  }).setView([28.415, 116.043], 13);
 
   // 添加高德卫星影像图层
   L.tileLayer('http://webst02.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}', {
@@ -263,7 +263,7 @@ const handleSave = async () => {
 
     if (!error && data) {
       message.success('田块保存成功！');
-      
+
       // 保存成功后重置表单
       handleReset();
     } else {
@@ -390,7 +390,7 @@ onUnmounted(() => {
                     :disabled="isSaving"
                     class="w-full"
                   />
-                  <div class="flex justify-between mt-1 text-xs text-gray-400">
+                  <div class="mt-1 flex justify-between text-xs text-gray-400">
                     <span>{{ farmlandForm.area.toFixed(2) }} m²</span>
                     <span>{{ (farmlandForm.area / 10000).toFixed(4) }} 公顷</span>
                   </div>
