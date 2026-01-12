@@ -37,7 +37,7 @@ const initMap = () => {
 
   // 添加高德卫星影像图层
   L.tileLayer('http://webst02.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}', {
-    maxNativeZoom: 18,
+    maxNativeZoom: 16,
     maxZoom: 22,
     minZoom: 3,
     attribution: '© 高德地图',
