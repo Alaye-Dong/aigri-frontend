@@ -1,70 +1,42 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import 'leaflet-draw/dist/leaflet.draw.css';
-import 'leaflet-draw';
-import { NButton, NCard, NForm, NFormItem, NInput, NInputNumber, NSelect, NSpace, useMessage } from 'naive-ui';
+import { onMounted, ref } from 'vue';
+import { NCard, useMessage } from 'naive-ui';
 import { fetchCreateFarmland } from '@/service/api/farming/farmland';
 import { fetchGetUserList } from '@/service/api/system';
-import { useFormRules, useNaiveForm } from '@/hooks/common/form';
-
-// 定义田块表单数据类型
-interface FarmlandFormData {
-  name: string;
-  userId: string | null;
-  location: string;
-  soilType: string | null;
-  description: string;
-  coordinates: Array<[number, number]>;
-  area: number; // 平方米
-  areaSize: number | null; // 亩
-}
+import MapContainer from './modules/MapContainer.vue';
+import FarmlandInfo from './modules/FarmlandInfo.vue';
 
 const message = useMessage();
-const { formRef, validate, restoreValidation } = useNaiveForm();
-const { createRequiredRule } = useFormRules();
 
-const mapContainer = ref<HTMLElement | null>(null);
-let map: L.Map | null = null;
-let drawControl: L.Control.Draw | null = null;
-let drawnItems: L.FeatureGroup | null = null;
+// 子组件引用
+const mapContainerRef = ref<InstanceType<typeof MapContainer> | null>(null);
+const infoRef = ref<InstanceType<typeof FarmlandInfo> | null>(null);
 
-// 土壤类型选项 (保持与列表模块一致)
-const soilTypeOptions = [
-  { label: '黑土', value: '黑土' },
-  { label: '红土', value: '红土' },
-  { label: '黄土', value: '黄土' },
-  { label: '沙土', value: '沙土' },
-  { label: '粘土', value: '粘土' },
-  { label: '壤土', value: '壤土' }
-];
-
-// 用户选项
+// 用户相关
 const userOptions = ref<{ label: string; value: string }[]>([]);
 const userLoading = ref(false);
 
+// 地图状态
+const coordinates = ref<Array<[number, number]>>([]);
+const area = ref(0); // 平方米
+
 // 表单数据
-const farmlandForm = ref<FarmlandFormData>({
-  name: '',
-  userId: null,
-  location: '',
-  soilType: null,
-  description: '',
-  coordinates: [],
-  area: 0,
-  areaSize: null
-});
+const farmlandForm = ref<Api.Farming.FarmlandOperateParams>(createDefaultModel());
 
-// 表单校验规则
-const rules = {
-  name: createRequiredRule('请输入田块名称'),
-  userId: createRequiredRule('请选择负责人')
-};
+const isSaving = ref(false);
 
-const isDrawing = ref(false);
-const vertexCount = ref(0); // 当前绘制的顶点数量
-const isSaving = ref(false); // 保存状态
+function createDefaultModel(): Api.Farming.FarmlandOperateParams {
+  return {
+    id: null,
+    userId: null,
+    name: '',
+    areaSize: null,
+    location: '',
+    soilType: null,
+    description: '',
+    polygonPath: null
+  };
+}
 
 // 获取用户列表
 async function getUserOptions() {
@@ -82,236 +54,59 @@ async function getUserOptions() {
   }
 }
 
-// 初始化地图
-const initMap = () => {
-  if (!mapContainer.value) return;
-
-  // 创建地图实例，中心点设置为中国某个位置（可根据实际需求调整）
-  map = L.map(mapContainer.value, {
-    maxZoom: 22, // 允许用户放大到的最大级别
-    minZoom: 3, // 最小缩放级别
-    attributionControl: false // 禁用右下角版权信息
-  }).setView([28.415, 116.043], 13);
-
-  // 添加高德卫星影像图层
-  L.tileLayer('http://webst02.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}', {
-    maxNativeZoom: 18, // 高德卫星图实际的最大缩放级别
-    maxZoom: 22, // 允许放大到 22 级，超过 18 级后会放大已有图像
-    minZoom: 3,
-    attribution: '© 高德地图',
-    errorTileUrl: '' // 加载失败时不显示错误图片
-  }).addTo(map);
-
-  // 叠加路网标注图层（可选）
-  L.tileLayer('http://webst02.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}', {
-    maxNativeZoom: 18,
-    maxZoom: 22,
-    minZoom: 3,
-    errorTileUrl: ''
-  }).addTo(map);
-
-  // 创建绘制图层组
-  drawnItems = new L.FeatureGroup();
-  map.addLayer(drawnItems);
-
-  // 配置绘制控件
-  drawControl = new L.Control.Draw({
-    position: 'topright',
-    draw: {
-      polygon: {
-        allowIntersection: false, // 不允许自相交
-        showArea: false, // 禁用内置面积显示（避免 leaflet-draw bug）
-        metric: true, // 使用公制单位
-        repeatMode: false, // 禁用重复模式
-        drawError: {
-          color: '#e74c3c',
-          message: '<strong>错误!</strong> 不能自相交!'
-        },
-        shapeOptions: {
-          color: '#3388ff',
-          weight: 3,
-          fillOpacity: 0.3
-        },
-        icon: new L.DivIcon({
-          iconSize: new L.Point(8, 8),
-          className: 'leaflet-div-icon leaflet-editing-icon'
-        }),
-        touchIcon: new L.DivIcon({
-          iconSize: new L.Point(20, 20),
-          className: 'leaflet-div-icon leaflet-editing-icon leaflet-touch-icon'
-        })
-      },
-      polyline: false,
-      circle: false,
-      rectangle: false,
-      marker: false,
-      circlemarker: false
-    },
-    edit: {
-      featureGroup: drawnItems,
-      remove: true
-    }
-  });
-
-  map.addControl(drawControl);
-  console.log('绘制控件已初始化');
-
-  // 监听绘制完成事件
-  map.on(L.Draw.Event.CREATED, (event: any) => {
-    console.log('绘制完成事件触发', event);
-    const layer = event.layer;
-    drawnItems?.addLayer(layer);
-
-    // 获取坐标点
-    const latlngs = layer.getLatLngs()[0]; // 多边形的坐标数组
-    console.log('坐标点数量:', latlngs.length);
-    const coordinates: Array<[number, number]> = latlngs.map((latlng: L.LatLng) => [latlng.lat, latlng.lng]);
-
-    // 计算面积（平方米）
-    const area = calculateArea(latlngs);
-    const areaSize = Number((area / 666.67).toFixed(2)); // 转换为亩
-
-    farmlandForm.value.coordinates = coordinates;
-    farmlandForm.value.area = area;
-    farmlandForm.value.areaSize = areaSize;
-
-    isDrawing.value = false;
-    message.success(`已绘制田块，面积约为 ${areaSize} 亩 (${(area / 10000).toFixed(2)} 公顷)`);
-  });
-
-  // 监听绘制开始
-  map.on(L.Draw.Event.DRAWSTART, () => {
-    console.log('开始绘制');
-    isDrawing.value = true;
-    vertexCount.value = 0; // 重置顶点计数
-  });
-
-  // 监听绘制停止
-  map.on(L.Draw.Event.DRAWSTOP, () => {
-    console.log('停止绘制');
-    isDrawing.value = false;
-    vertexCount.value = 0; // 重置顶点计数
-  });
-
-  // 监听绘制顶点事件
-  map.on(L.Draw.Event.DRAWVERTEX, (event: any) => {
-    vertexCount.value++;
-    console.log('添加顶点，当前顶点数:', vertexCount.value);
-  });
-
-  // 监听删除事件
-  map.on(L.Draw.Event.DELETED, () => {
-    farmlandForm.value.coordinates = [];
-    farmlandForm.value.area = 0;
-    message.info('已删除绘制的田块');
-  });
-};
-
-// 使用 Leaflet 的面积计算（基于球面几何）
-const calculateArea = (latlngs: L.LatLng[]): number => {
-  const earthRadius = 6371000; // 地球半径（米）
-  let area = 0;
-  const points = latlngs.length;
-
-  if (points < 3) return 0;
-
-  for (let i = 0; i < points; i++) {
-    const p1 = latlngs[i];
-    const p2 = latlngs[(i + 1) % points];
-
-    area += deg2rad(p2.lng - p1.lng) * (2 + Math.sin(deg2rad(p1.lat)) + Math.sin(deg2rad(p2.lat)));
-  }
-
-  area = (area * earthRadius * earthRadius) / 2;
-  return Math.abs(area);
-};
-
-const deg2rad = (deg: number): number => {
-  return (deg * Math.PI) / 180;
+// 处理来自地图的数据更新
+const handleMapDataUpdate = (data: { coordinates: Array<[number, number]>; area: number; areaSize: number }) => {
+  coordinates.value = data.coordinates;
+  area.value = data.area;
+  farmlandForm.value.areaSize = data.areaSize;
+  farmlandForm.value.polygonPath = JSON.stringify(data.coordinates);
 };
 
 // 保存田块数据
 const handleSave = async () => {
   try {
-    // 1. 表单校验
-    await validate();
-
-    // 2. 地图数据校验
-    if (farmlandForm.value.coordinates.length < 3) {
+    // 地图数据校验
+    if (coordinates.value.length < 3) {
       message.warning('至少需要3个顶点才能形成有效的田块');
       return;
     }
 
     isSaving.value = true;
 
-    // 3. 准备提交的数据
-    const submitData: Api.Farming.FarmlandOperateParams = {
-      name: farmlandForm.value.name,
-      userId: farmlandForm.value.userId,
-      location: farmlandForm.value.location || null,
-      soilType: farmlandForm.value.soilType || null,
-      description: farmlandForm.value.description || null,
-      areaSize: farmlandForm.value.areaSize || null,
-      // 将坐标数组转换为JSON字符串存储
-      polygonPath: JSON.stringify(farmlandForm.value.coordinates)
-    };
+    // 准备提交的数据 (可以直接使用 farmlandForm.value，因为它已经是正确的类型)
+    // 确保 polygonPath 是最新的 (虽然 handleMapDataUpdate 已经更新了，但再次确认也无妨，或者就在这里设置)
+    farmlandForm.value.polygonPath = JSON.stringify(coordinates.value);
 
-    console.log('即将提交的数据:', submitData);
+    console.log('即将提交的数据:', farmlandForm.value);
 
-    // 4. 调用 API 保存数据
-    const { data, error } = await fetchCreateFarmland(submitData);
+    // 调用 API 保存数据
+    const { data, error } = await fetchCreateFarmland(farmlandForm.value);
 
     if (!error && data) {
       message.success('田块保存成功！');
-
-      // 保存成功后重置表单
       handleReset();
-    } else {
-      // 这里的错误通常由 axios 拦截器处理，但如果是业务错误码也可以在这里处理
-      // message.error(error?.message || '保存失败，请重试');
     }
   } catch (err: any) {
-    // 校验失败或发生异常
     console.error('保存失败:', err);
-    // message.error(err.message || '保存失败，请稍后重试');
   } finally {
     isSaving.value = false;
   }
 };
 
-// 清空表单
+// 重置表单和地图
 const handleReset = () => {
-  farmlandForm.value = {
-    name: '',
-    userId: null,
-    location: '',
-    soilType: null,
-    description: '',
-    coordinates: [],
-    area: 0,
-    areaSize: null
-  };
+  farmlandForm.value = createDefaultModel();
+  coordinates.value = [];
+  area.value = 0;
 
   // 清除地图上的绘制
-  drawnItems?.clearLayers();
-  restoreValidation(); // 重置校验状态
+  mapContainerRef.value?.clearMap();
+
   message.info('已重置表单');
 };
 
 onMounted(() => {
   getUserOptions();
-  // 延迟初始化地图，确保 DOM 已渲染
-  setTimeout(() => {
-    initMap();
-  }, 100);
-});
-
-onUnmounted(() => {
-  // 清理地图实例
-  if (map) {
-    map.remove();
-    map = null;
-  }
 });
 </script>
 
@@ -320,125 +115,20 @@ onUnmounted(() => {
     <NCard title="田块地图管理" :bordered="false" class="h-full">
       <div class="map-layout">
         <!-- 地图容器 -->
-        <div class="map-wrapper">
-          <div ref="mapContainer" class="map-container"></div>
-          <div v-if="isDrawing" class="drawing-tip">
-            <div class="tip-text">点击地图添加顶点，双击完成绘制</div>
-            <div class="tip-count">已添加 {{ vertexCount }} 个顶点</div>
-          </div>
-        </div>
+        <MapContainer ref="mapContainerRef" @update:data="handleMapDataUpdate" />
 
         <!-- 右侧信息面板 -->
-        <div class="info-panel">
-          <NCard title="田块信息" size="small">
-            <NForm ref="formRef" :model="farmlandForm" :rules="rules" label-placement="left" label-width="80">
-              <NFormItem label="田块名称" path="name">
-                <NInput v-model:value="farmlandForm.name" placeholder="请输入田块名称" :disabled="isSaving" />
-              </NFormItem>
-
-              <NFormItem label="负责人" path="userId">
-                <NSelect
-                  v-model:value="farmlandForm.userId"
-                  :options="userOptions"
-                  :loading="userLoading"
-                  filterable
-                  clearable
-                  placeholder="请选择负责人"
-                  :disabled="isSaving"
-                />
-              </NFormItem>
-
-              <NFormItem label="位置" path="location">
-                <NInput
-                  v-model:value="farmlandForm.location"
-                  placeholder="请输入位置信息（可选）"
-                  :disabled="isSaving"
-                />
-              </NFormItem>
-
-              <NFormItem label="土壤类型" path="soilType">
-                <NSelect
-                  v-model:value="farmlandForm.soilType"
-                  :options="soilTypeOptions"
-                  placeholder="请选择土壤类型（可选）"
-                  clearable
-                  :disabled="isSaving"
-                />
-              </NFormItem>
-
-              <NFormItem label="描述" path="description">
-                <NInput
-                  v-model:value="farmlandForm.description"
-                  type="textarea"
-                  placeholder="请输入田块描述（可选）"
-                  :autosize="{ minRows: 2, maxRows: 4 }"
-                  :disabled="isSaving"
-                />
-              </NFormItem>
-
-              <NFormItem label="坐标数量">
-                <span>{{ farmlandForm.coordinates.length }} 个点</span>
-              </NFormItem>
-
-              <NFormItem label="面积(亩)" path="areaSize">
-                <div class="area-info w-full">
-                  <NInputNumber
-                    v-model:value="farmlandForm.areaSize"
-                    placeholder="请输入面积"
-                    :precision="2"
-                    :min="0"
-                    :disabled="isSaving"
-                    class="w-full"
-                  />
-                  <div class="mt-1 flex justify-between text-xs text-gray-400">
-                    <span>{{ farmlandForm.area.toFixed(2) }} m²</span>
-                    <span>{{ (farmlandForm.area / 10000).toFixed(4) }} 公顷</span>
-                  </div>
-                </div>
-              </NFormItem>
-
-              <NFormItem label="坐标数据">
-                <div class="coordinates-display">
-                  <div v-if="farmlandForm.coordinates.length > 0" class="coordinate-list">
-                    <div v-for="(coord, index) in farmlandForm.coordinates" :key="index" class="coordinate-item">
-                      {{ index + 1 }}: [{{ coord[0].toFixed(6) }}, {{ coord[1].toFixed(6) }}]
-                    </div>
-                  </div>
-                  <div v-else class="empty-hint">暂无坐标数据</div>
-                </div>
-              </NFormItem>
-
-              <NFormItem>
-                <NSpace>
-                  <NButton
-                    type="primary"
-                    :loading="isSaving"
-                    :disabled="farmlandForm.coordinates.length === 0"
-                    @click="handleSave"
-                  >
-                    {{ isSaving ? '保存中...' : '保存田块' }}
-                  </NButton>
-                  <NButton :disabled="isSaving" @click="handleReset">重置</NButton>
-                </NSpace>
-              </NFormItem>
-            </NForm>
-          </NCard>
-
-          <NCard title="使用说明" size="small" class="mt-4">
-            <div class="instruction">
-              <p>
-                1. 点击地图右上角的
-                <strong>多边形工具</strong>
-                开始绘制
-              </p>
-              <p>2. 在地图上点击添加顶点，围成封闭图形</p>
-              <p>3. 双击完成绘制</p>
-              <p>4. 系统会自动计算面积和坐标</p>
-              <p>5. 输入田块名称后点击保存</p>
-              <p>6. 可以使用编辑和删除工具调整图形</p>
-            </div>
-          </NCard>
-        </div>
+        <FarmlandInfo
+          ref="infoRef"
+          v-model="farmlandForm"
+          :coordinates="coordinates"
+          :area="area"
+          :user-options="userOptions"
+          :user-loading="userLoading"
+          :loading="isSaving"
+          @submit="handleSave"
+          @reset="handleReset"
+        />
       </div>
     </NCard>
   </div>
@@ -454,185 +144,5 @@ onUnmounted(() => {
   display: flex;
   gap: 16px;
   height: calc(100vh - 180px);
-}
-
-.map-wrapper {
-  flex: 1;
-  position: relative;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.map-container {
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-}
-
-.drawing-tip {
-  position: absolute;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(51, 136, 255, 0.95);
-  color: white;
-  padding: 14px 28px;
-  border-radius: 8px;
-  z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  animation: pulse 2s ease-in-out infinite;
-  text-align: center;
-  min-width: 280px;
-}
-
-.tip-text {
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 4px;
-}
-
-.tip-count {
-  font-size: 16px;
-  font-weight: 700;
-  color: #ffd700;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.8;
-  }
-}
-
-.info-panel {
-  width: 360px;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-
-.area-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.area-primary {
-  font-size: 20px;
-  font-weight: 700;
-  color: #18a058;
-}
-
-.area-secondary {
-  font-size: 12px;
-  color: #999;
-}
-
-.coordinates-display {
-  width: 100%;
-  max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid #e0e0e6;
-  border-radius: 4px;
-  padding: 8px;
-  background: #fafafa;
-}
-
-.coordinate-list {
-  font-family: 'Courier New', monospace;
-  font-size: 12px;
-}
-
-.coordinate-item {
-  padding: 2px 0;
-  color: #333;
-}
-
-.empty-hint {
-  text-align: center;
-  color: #999;
-  padding: 20px 0;
-  font-size: 12px;
-}
-
-.instruction {
-  font-size: 13px;
-  line-height: 1.8;
-  color: #666;
-}
-
-.instruction p {
-  margin: 8px 0;
-}
-
-.instruction strong {
-  color: #3388ff;
-  font-weight: 600;
-}
-
-/* 自定义滚动条 */
-.coordinates-display::-webkit-scrollbar,
-.info-panel::-webkit-scrollbar {
-  width: 6px;
-}
-
-.coordinates-display::-webkit-scrollbar-track,
-.info-panel::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.coordinates-display::-webkit-scrollbar-thumb,
-.info-panel::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 3px;
-}
-
-.coordinates-display::-webkit-scrollbar-thumb:hover,
-.info-panel::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-/* Leaflet Draw 自定义样式 */
-:deep(.leaflet-draw-tooltip) {
-  background: rgba(51, 136, 255, 0.9);
-  border: none;
-  color: white;
-  font-size: 12px;
-  padding: 6px 10px;
-  border-radius: 4px;
-}
-
-:deep(.leaflet-draw-tooltip-single) {
-  background: rgba(51, 136, 255, 0.9);
-}
-
-:deep(.leaflet-draw-tooltip-subtext) {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-/* 绘制顶点样式 */
-:deep(.leaflet-editing-icon) {
-  border-radius: 50%;
-  border: 2px solid #3388ff;
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-:deep(.leaflet-marker-icon) {
-  border: 2px solid #3388ff !important;
-  background: white !important;
-}
-
-/* 中间点样式 */
-:deep(.leaflet-draw-guide-dash) {
-  stroke-dasharray: 5, 10;
-  stroke: #3388ff;
-  stroke-width: 2;
 }
 </style>
