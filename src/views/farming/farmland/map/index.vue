@@ -55,11 +55,19 @@ async function getUserOptions() {
 }
 
 // 处理来自地图的数据更新
-const handleMapDataUpdate = (data: { coordinates: Array<[number, number]>; area: number; areaSize: number }) => {
+const handleMapDataUpdate = (data: {
+  coordinates: Array<[number, number]>;
+  area: number;
+  areaSize: number;
+  location: string;
+}) => {
   coordinates.value = data.coordinates;
   area.value = data.area;
   farmlandForm.value.areaSize = data.areaSize;
   farmlandForm.value.polygonPath = JSON.stringify(data.coordinates);
+  if (data.location) {
+    farmlandForm.value.location = data.location;
+  }
 };
 
 // 保存田块数据

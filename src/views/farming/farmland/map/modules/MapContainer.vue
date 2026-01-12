@@ -11,7 +11,7 @@ defineOptions({
 });
 
 const emit = defineEmits<{
-  (e: 'update:data', val: { coordinates: Array<[number, number]>; area: number; areaSize: number }): void;
+  (e: 'update:data', val: { coordinates: Array<[number, number]>; area: number; areaSize: number; location: string }): void;
   (e: 'update:drawing', val: boolean): void;
 }>();
 
@@ -98,7 +98,7 @@ const initMap = () => {
   map.addControl(drawControl);
 
   // 监听绘制完成事件
-  map.on(L.Draw.Event.CREATED, (event: any) => {
+  map.on(L.Draw.Event.CREATED, async (event: any) => {
     const layer = event.layer;
     drawnItems?.addLayer(layer);
 
@@ -106,11 +106,15 @@ const initMap = () => {
     const latlngs = layer.getLatLngs()[0];
     const coordinates: Array<[number, number]> = latlngs.map((latlng: L.LatLng) => [latlng.lat, latlng.lng]);
 
+    // 计算中心点用于逆地理编码
+    const center = layer.getBounds().getCenter();
+    const location = await fetchAddress(center.lat, center.lng);
+
     // 计算面积
     const area = calculateArea(latlngs);
     const areaSize = Number((area / 666.67).toFixed(2));
 
-    emit('update:data', { coordinates, area, areaSize });
+    emit('update:data', { coordinates, area, areaSize, location });
 
     isDrawing.value = false;
     emit('update:drawing', false);
@@ -138,9 +142,42 @@ const initMap = () => {
 
   // 监听删除事件
   map.on(L.Draw.Event.DELETED, () => {
-    emit('update:data', { coordinates: [], area: 0, areaSize: 0 });
+    emit('update:data', { coordinates: [], area: 0, areaSize: 0, location: '' });
     message.info('已删除绘制的田块');
   });
+};
+
+// 逆地理编码获取地址
+const fetchAddress = async (lat: number, lng: number): Promise<string> => {
+  try {
+    // 优先使用 Nominatim (OSM) 进行免费逆地理编码，设置语言为中文
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+      {
+        headers: {
+          'Accept-Language': 'zh-CN,zh;q=0.9'
+        }
+      }
+    );
+    const data = await response.json();
+
+    if (data && data.address) {
+      const addr = data.address;
+      // 按照中国地址习惯拼接: 省 + 市 + 区/县 + 镇/街道 + 村/路/地名
+      const parts = [
+        addr.state || addr.province || '',
+        addr.city || addr.town || addr.municipality || '',
+        addr.county || addr.district || '',
+        addr.suburb || addr.township || addr.village || '',
+        addr.road || addr.neighbourhood || addr.pedestrian || ''
+      ].filter(Boolean);
+
+      return parts.join('');
+    }
+  } catch (error) {
+    console.error('获取地址失败:', error);
+  }
+  return '';
 };
 
 // 计算面积
