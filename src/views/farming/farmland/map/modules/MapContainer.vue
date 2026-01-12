@@ -11,7 +11,10 @@ defineOptions({
 });
 
 const emit = defineEmits<{
-  (e: 'update:data', val: { coordinates: Array<[number, number]>; area: number; areaSize: number; location: string }): void;
+  (
+    e: 'update:data',
+    val: { coordinates: Array<[number, number]>; area: number; areaSize: number; location: string }
+  ): void;
   (e: 'update:drawing', val: boolean): void;
 }>();
 
@@ -101,24 +104,18 @@ const initMap = () => {
   map.on(L.Draw.Event.CREATED, async (event: any) => {
     const layer = event.layer;
     drawnItems?.addLayer(layer);
+    await handlePolygonUpdate(layer);
+  });
 
-    // 获取坐标点
-    const latlngs = layer.getLatLngs()[0];
-    const coordinates: Array<[number, number]> = latlngs.map((latlng: L.LatLng) => [latlng.lat, latlng.lng]);
-
-    // 计算中心点用于逆地理编码
-    const center = layer.getBounds().getCenter();
-    const location = await fetchAddress(center.lat, center.lng);
-
-    // 计算面积
-    const area = calculateArea(latlngs);
-    const areaSize = Number((area / 666.67).toFixed(2));
-
-    emit('update:data', { coordinates, area, areaSize, location });
-
-    isDrawing.value = false;
-    emit('update:drawing', false);
-    message.success(`已绘制田块，面积约为 ${areaSize} 亩 (${(area / 10000).toFixed(2)} 公顷)`);
+  // 监听编辑事件
+  map.on(L.Draw.Event.EDITED, async (event: any) => {
+    const layers = event.layers;
+    // 由于只允许绘制一个多边形，我们只需要处理第一个图层
+    const layer = layers.getLayers()[0];
+    if (layer) {
+      await handlePolygonUpdate(layer);
+      message.success('田块形状已更新');
+    }
   });
 
   // 监听绘制开始
@@ -146,6 +143,38 @@ const initMap = () => {
     message.info('已删除绘制的田块');
   });
 };
+
+// 处理多边形更新
+const handlePolygonUpdate = async (layer: any) => {
+  // 获取坐标点
+  let latlngs = layer.getLatLngs();
+  // Handle nested arrays (multipolygon/holes) - usually getLatLngs returns [LatLng[]] for simple polygon
+  if (Array.isArray(latlngs) && Array.isArray(latlngs[0]) && !('lat' in latlngs[0])) {
+    latlngs = latlngs[0];
+  }
+
+  const coordinates: Array<[number, number]> = latlngs.map((latlng: L.LatLng) => [latlng.lat, latlng.lng]);
+
+  // 计算中心点用于逆地理编码
+  const center = layer.getBounds().getCenter();
+  const location = await fetchAddress(center.lat, center.lng);
+
+  // 计算面积
+  const area = calculateArea(latlngs);
+  const areaSize = Number((area / 666.67).toFixed(2));
+
+  emit('update:data', { coordinates, area, areaSize, location });
+
+  isDrawing.value = false;
+  emit('update:drawing', false);
+
+  if (!CoordinatesUpdatedFromSetPolygon) {
+    message.success(`已更新田块，面积约为 ${areaSize} 亩 (${(area / 10000).toFixed(2)} 公顷)`);
+  }
+  CoordinatesUpdatedFromSetPolygon = false;
+};
+
+let CoordinatesUpdatedFromSetPolygon = false;
 
 // 逆地理编码获取地址
 const fetchAddress = async (lat: number, lng: number): Promise<string> => {
@@ -229,6 +258,10 @@ const setPolygon = (coordinates: Array<[number, number]>) => {
 
   // 调整地图视野以显示多边形
   map.fitBounds(polygon.getBounds());
+
+  // 主动触发一次更新，重新计算面积
+  CoordinatesUpdatedFromSetPolygon = true;
+  handlePolygonUpdate(polygon);
 };
 
 defineExpose({
