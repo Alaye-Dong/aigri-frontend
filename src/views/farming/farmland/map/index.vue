@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { NCard, useMessage } from 'naive-ui';
-import { fetchCreateFarmland } from '@/service/api/farming/farmland';
+import { fetchCreateFarmland, fetchUpdateFarmland } from '@/service/api/farming/farmland';
 import { fetchGetUserList } from '@/service/api/system';
 import MapContainer from './modules/MapContainer.vue';
 import FarmlandInfo from './modules/FarmlandInfo.vue';
 
 const message = useMessage();
+const route = useRoute();
 
 // 子组件引用
 const mapContainerRef = ref<InstanceType<typeof MapContainer> | null>(null);
@@ -88,10 +90,19 @@ const handleSave = async () => {
     console.log('即将提交的数据:', farmlandForm.value);
 
     // 调用 API 保存数据
-    const { data, error } = await fetchCreateFarmland(farmlandForm.value);
+    let result;
+    if (farmlandForm.value.id) {
+      result = await fetchUpdateFarmland(farmlandForm.value);
+    } else {
+      result = await fetchCreateFarmland(farmlandForm.value);
+    }
+
+    const { data, error } = result;
 
     if (!error && data) {
       message.success('田块保存成功！');
+      // 如果是编辑模式，不重置，或者根据需求决定。这里假设保存后为了便利可以保留或重置。
+      // 如果是从列表跳转过来的，可能希望保留状态？但通常保存意味着完成。
       handleReset();
     }
   } catch (err: any) {
@@ -115,6 +126,33 @@ const handleReset = () => {
 
 onMounted(() => {
   getUserOptions();
+
+  // 检查路由参数，如果有数据则回显
+  const queryData = route.query.data;
+  if (queryData && typeof queryData === 'string') {
+    try {
+      const parsedData = JSON.parse(queryData);
+      Object.assign(farmlandForm.value, parsedData);
+
+      // 回显多边形
+      if (parsedData.polygonPath) {
+        const coords = JSON.parse(parsedData.polygonPath);
+        coordinates.value = coords;
+        // 设置面积显示
+        if (parsedData.areaSize) {
+          // 这里的 area 是用于显示的 m2，近似倒推一下或者直接为 0 (因为 FarmlandInfo 主要显示 areaSize 亩)
+          area.value = parsedData.areaSize * 666.67;
+        }
+
+        // 延迟执行以确保地图初始化完成
+        setTimeout(() => {
+          mapContainerRef.value?.setPolygon(coords);
+        }, 500);
+      }
+    } catch (e) {
+      console.error('解析路由数据失败:', e);
+    }
+  }
 });
 </script>
 

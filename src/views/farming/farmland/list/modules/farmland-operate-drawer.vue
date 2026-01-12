@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { jsonClone } from '@sa/utils';
 import { useLoading } from '@sa/hooks';
 import { fetchCreateFarmland, fetchGetFarmlandInfo, fetchUpdateFarmland } from '@/service/api/farming';
@@ -144,6 +145,25 @@ const areaSizeNumber = computed<number | null>({
   }
 });
 
+const router = useRouter();
+
+function handleToMap() {
+  const queryData = { ...model.value };
+  // 移除空值
+  (Object.keys(queryData) as Array<keyof Model>).forEach(key => {
+    if (queryData[key] === null || queryData[key] === undefined) {
+      delete queryData[key];
+    }
+  });
+
+  router.push({
+    name: 'farming_farmland_map',
+    query: {
+      data: JSON.stringify(queryData)
+    }
+  });
+}
+
 async function handleSubmit() {
   try {
     await validate();
@@ -239,6 +259,12 @@ onMounted(() => {
               placeholder="请输入地块描述"
               :autosize="{ minRows: 3, maxRows: 5 }"
             />
+          </NFormItem>
+          <NFormItem label="多边形路径" path="polygonPath">
+            <NInputGroup>
+              <NInput v-model:value="model.polygonPath" placeholder="请在地图上绘制" readonly />
+              <NButton type="primary" @click="handleToMap">去绘制</NButton>
+            </NInputGroup>
           </NFormItem>
         </NForm>
       </NSpin>

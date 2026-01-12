@@ -207,8 +207,33 @@ const clearMap = () => {
   drawnItems?.clearLayers();
 };
 
+// 设置多边形
+const setPolygon = (coordinates: Array<[number, number]>) => {
+  if (!map || !drawnItems) return;
+
+  clearMap(); // 清除现有绘制
+
+  if (coordinates.length < 3) return;
+
+  // 转换为 Leaflet 坐标点
+  const latlngs = coordinates.map(c => L.latLng(c[0], c[1]));
+
+  // 创建多边形并在 FeatureGroup 中显示，这样就可以被编辑
+  const polygon = L.polygon(latlngs, {
+    color: '#3388ff',
+    weight: 3,
+    fillOpacity: 0.3
+  });
+
+  drawnItems.addLayer(polygon);
+
+  // 调整地图视野以显示多边形
+  map.fitBounds(polygon.getBounds());
+};
+
 defineExpose({
-  clearMap
+  clearMap,
+  setPolygon
 });
 
 onMounted(() => {
