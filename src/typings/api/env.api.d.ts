@@ -102,5 +102,46 @@ declare namespace Api {
 
     /** 告警日志操作参数 */
     type AlertLogOperateParams = CommonType.RecordNullable<AlertLog>;
+
+    type EnvData = Common.CommonRecord<{
+      /** 数据ID */
+      id: CommonType.IdType;
+
+      /** 设备ID */
+      deviceId: CommonType.IdType;
+
+      /** 设备序列号 - 用于前端展示 */
+      deviceSerialNo: string;
+
+      /** 农田ID */
+      farmlandId: CommonType.IdType;
+
+      /** 农田名称 - 用于前端展示 */
+      farmlandName: string;
+
+      /** 空气温度 */
+      airTemp?: number;
+
+      /** 空气湿度 */
+      airHumidity?: number;
+
+      /** 土壤湿度 */
+      soilMoisture?: number;
+
+      /** 光照强度(lux) */
+      lightLux?: number;
+
+      /** CO2浓度(ppm) */
+      co2Ppm?: number;
+
+      /** 采集时间 */
+      collectTime: string;
+    }>;
+
+    type EnvDataSearchParams = CommonType.RecordNullable<
+      Pick<EnvData, 'deviceSerialNo' | 'farmlandName' | 'collectTime'> & Common.CommonSearchParams
+    >;
+
+    type EnvDataList = Common.PaginatingQueryRecord<EnvData>;
   }
 }
