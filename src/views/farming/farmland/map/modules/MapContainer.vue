@@ -27,6 +27,94 @@ let drawnItems: L.FeatureGroup | null = null;
 const isDrawing = ref(false);
 const vertexCount = ref(0);
 
+// 逆地理编码获取地址
+const fetchAddress = async (lat: number, lng: number): Promise<string> => {
+  try {
+    // 优先使用 Nominatim (OSM) 进行免费逆地理编码，设置语言为中文
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+      {
+        headers: {
+          'Accept-Language': 'zh-CN,zh;q=0.9'
+        }
+      }
+    );
+    const data = await response.json();
+
+    if (data && data.address) {
+      const addr = data.address;
+      // 按照中国地址习惯拼接: 省 + 市 + 区/县 + 镇/街道 + 村/路/地名
+      const parts = [
+        addr.state || addr.province || '',
+        addr.city || addr.town || addr.municipality || '',
+        addr.county || addr.district || '',
+        addr.suburb || addr.township || addr.village || '',
+        addr.road || addr.neighbourhood || addr.pedestrian || ''
+      ].filter(Boolean);
+
+      return parts.join('');
+    }
+  } catch (error) {
+    console.error('获取地址失败:', error);
+  }
+  return '';
+};
+
+const deg2rad = (deg: number): number => {
+  return (deg * Math.PI) / 180;
+};
+
+// 计算面积
+const calculateArea = (latlngs: L.LatLng[]): number => {
+  const earthRadius = 6371000;
+  let area = 0;
+  const points = latlngs.length;
+
+  if (points < 3) return 0;
+
+  /* eslint no-plusplus: ["error", { "allowForLoopAfterthoughts": true }] */
+  for (let i = 0; i < points; i++) {
+    const p1 = latlngs[i];
+    const p2 = latlngs[(i + 1) % points];
+    area += deg2rad(p2.lng - p1.lng) * (2 + Math.sin(deg2rad(p1.lat)) + Math.sin(deg2rad(p2.lat)));
+  }
+
+  area = (area * earthRadius * earthRadius) / 2;
+  return Math.abs(area);
+};
+
+let CoordinatesUpdatedFromSetPolygon = false;
+
+// 处理多边形更新
+const handlePolygonUpdate = async (layer: any) => {
+  // 获取坐标点
+  let latlngs = layer.getLatLngs();
+  // Handle nested arrays (multipolygon/holes) - usually getLatLngs returns [LatLng[]] for simple polygon
+  if (Array.isArray(latlngs) && Array.isArray(latlngs[0]) && !('lat' in latlngs[0])) {
+    latlngs = latlngs[0];
+  }
+
+  const coordinates: Array<[number, number]> = latlngs.map((latlng: L.LatLng) => [latlng.lat, latlng.lng]);
+
+  // 计算中心点用于逆地理编码
+  const center = layer.getBounds().getCenter();
+  const location = await fetchAddress(center.lat, center.lng);
+
+  // 计算面积
+  const area = calculateArea(latlngs);
+  const areaSize = Number((area / 666.67).toFixed(2));
+
+  emit('update:data', { coordinates, area, areaSize, location });
+
+  isDrawing.value = false;
+  emit('update:drawing', false);
+
+  if (!CoordinatesUpdatedFromSetPolygon) {
+    message.success(`已更新田块，面积约为 ${areaSize} 亩 (${(area / 10000).toFixed(2)} 公顷)`);
+  }
+  CoordinatesUpdatedFromSetPolygon = false;
+};
+
 // 初始化地图
 const initMap = () => {
   if (!mapContainer.value) return;
@@ -134,7 +222,7 @@ const initMap = () => {
 
   // 监听绘制顶点事件
   map.on(L.Draw.Event.DRAWVERTEX, () => {
-    vertexCount.value++;
+    vertexCount.value += 1;
   });
 
   // 监听删除事件
@@ -142,93 +230,6 @@ const initMap = () => {
     emit('update:data', { coordinates: [], area: 0, areaSize: 0, location: '' });
     message.info('已删除绘制的田块');
   });
-};
-
-// 处理多边形更新
-const handlePolygonUpdate = async (layer: any) => {
-  // 获取坐标点
-  let latlngs = layer.getLatLngs();
-  // Handle nested arrays (multipolygon/holes) - usually getLatLngs returns [LatLng[]] for simple polygon
-  if (Array.isArray(latlngs) && Array.isArray(latlngs[0]) && !('lat' in latlngs[0])) {
-    latlngs = latlngs[0];
-  }
-
-  const coordinates: Array<[number, number]> = latlngs.map((latlng: L.LatLng) => [latlng.lat, latlng.lng]);
-
-  // 计算中心点用于逆地理编码
-  const center = layer.getBounds().getCenter();
-  const location = await fetchAddress(center.lat, center.lng);
-
-  // 计算面积
-  const area = calculateArea(latlngs);
-  const areaSize = Number((area / 666.67).toFixed(2));
-
-  emit('update:data', { coordinates, area, areaSize, location });
-
-  isDrawing.value = false;
-  emit('update:drawing', false);
-
-  if (!CoordinatesUpdatedFromSetPolygon) {
-    message.success(`已更新田块，面积约为 ${areaSize} 亩 (${(area / 10000).toFixed(2)} 公顷)`);
-  }
-  CoordinatesUpdatedFromSetPolygon = false;
-};
-
-let CoordinatesUpdatedFromSetPolygon = false;
-
-// 逆地理编码获取地址
-const fetchAddress = async (lat: number, lng: number): Promise<string> => {
-  try {
-    // 优先使用 Nominatim (OSM) 进行免费逆地理编码，设置语言为中文
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
-      {
-        headers: {
-          'Accept-Language': 'zh-CN,zh;q=0.9'
-        }
-      }
-    );
-    const data = await response.json();
-
-    if (data && data.address) {
-      const addr = data.address;
-      // 按照中国地址习惯拼接: 省 + 市 + 区/县 + 镇/街道 + 村/路/地名
-      const parts = [
-        addr.state || addr.province || '',
-        addr.city || addr.town || addr.municipality || '',
-        addr.county || addr.district || '',
-        addr.suburb || addr.township || addr.village || '',
-        addr.road || addr.neighbourhood || addr.pedestrian || ''
-      ].filter(Boolean);
-
-      return parts.join('');
-    }
-  } catch (error) {
-    console.error('获取地址失败:', error);
-  }
-  return '';
-};
-
-// 计算面积
-const calculateArea = (latlngs: L.LatLng[]): number => {
-  const earthRadius = 6371000;
-  let area = 0;
-  const points = latlngs.length;
-
-  if (points < 3) return 0;
-
-  for (let i = 0; i < points; i++) {
-    const p1 = latlngs[i];
-    const p2 = latlngs[(i + 1) % points];
-    area += deg2rad(p2.lng - p1.lng) * (2 + Math.sin(deg2rad(p1.lat)) + Math.sin(deg2rad(p2.lat)));
-  }
-
-  area = (area * earthRadius * earthRadius) / 2;
-  return Math.abs(area);
-};
-
-const deg2rad = (deg: number): number => {
-  return (deg * Math.PI) / 180;
 };
 
 // 清空地图

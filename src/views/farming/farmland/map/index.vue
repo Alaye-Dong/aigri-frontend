@@ -72,6 +72,18 @@ const handleMapDataUpdate = (data: {
   }
 };
 
+// 重置表单和地图
+const handleReset = () => {
+  farmlandForm.value = createDefaultModel();
+  coordinates.value = [];
+  area.value = 0;
+
+  // 清除地图上的绘制
+  mapContainerRef.value?.clearMap();
+
+  message.info('已重置表单');
+};
+
 // 保存田块数据
 const handleSave = async () => {
   try {
@@ -110,18 +122,6 @@ const handleSave = async () => {
   } finally {
     isSaving.value = false;
   }
-};
-
-// 重置表单和地图
-const handleReset = () => {
-  farmlandForm.value = createDefaultModel();
-  coordinates.value = [];
-  area.value = 0;
-
-  // 清除地图上的绘制
-  mapContainerRef.value?.clearMap();
-
-  message.info('已重置表单');
 };
 
 onMounted(() => {
