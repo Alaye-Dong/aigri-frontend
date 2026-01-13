@@ -3,7 +3,6 @@ import { onMounted, watch } from 'vue';
 import { fetchGetEnvDataList } from '@/service/api/env/env-data';
 import { useAppStore } from '@/store/modules/app';
 import { useEcharts } from '@/hooks/common/echarts';
-import { $t } from '@/locales';
 
 defineOptions({
   name: 'EnvTrendChart'

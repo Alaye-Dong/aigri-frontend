@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { fetchGetFarmlandList } from '@/service/api/farming/farmland';
 import { fetchGetDeviceList } from '@/service/api/env/device';
 import EnvTrendChart from './modules/env-trend-chart.vue';
 import EnvAdvancedChart from './modules/env-advanced-chart.vue';
+import EnvDataCard from './modules/env-data-card.vue';
 
 defineOptions({
   name: 'EnvDataList'
@@ -93,20 +94,14 @@ onMounted(() => {
       </NSpace>
     </NCard>
 
+    <EnvDataCard :farmland-id="farmlandId" :device-id="deviceId" />
+
     <NGrid :x-gap="16" :y-gap="16" responsive="screen" item-responsive>
       <NGridItem span="24 l:12">
-        <EnvTrendChart
-          :farmland-name="selectedFarmlandName"
-          :farmland-id="farmlandId"
-          :device-id="deviceId"
-        />
+        <EnvTrendChart :farmland-name="selectedFarmlandName" :farmland-id="farmlandId" :device-id="deviceId" />
       </NGridItem>
       <NGridItem span="24 l:12">
-        <EnvAdvancedChart
-          :farmland-name="selectedFarmlandName"
-          :farmland-id="farmlandId"
-          :device-id="deviceId"
-        />
+        <EnvAdvancedChart :farmland-name="selectedFarmlandName" :farmland-id="farmlandId" :device-id="deviceId" />
       </NGridItem>
     </NGrid>
   </div>
