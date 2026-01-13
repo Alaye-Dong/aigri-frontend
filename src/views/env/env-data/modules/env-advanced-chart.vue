@@ -48,10 +48,17 @@ const { domRef, updateOptions } = useEcharts(() => ({
   series: [] as any[]
 }));
 
+const props = defineProps<{
+  farmlandName?: string | null;
+  deviceSerialNo?: string | null;
+}>();
+
 async function getData() {
   const { data, error } = await fetchGetEnvDataList({
     current: 1,
-    size: 50
+    size: 50,
+    farmlandName: props.farmlandName,
+    deviceSerialNo: props.deviceSerialNo
   });
 
   if (!error && data) {
@@ -106,6 +113,13 @@ function init() {
 watch(
   () => appStore.locale, // Refresh if needed for translations later
   () => {}
+);
+
+watch(
+  () => [props.farmlandName, props.deviceSerialNo],
+  () => {
+    getData();
+  }
 );
 
 onMounted(() => {
