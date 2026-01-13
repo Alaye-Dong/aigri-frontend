@@ -142,21 +142,6 @@ defineExpose({
         </NFormItem>
       </NForm>
     </NCard>
-
-    <NCard title="使用说明" size="small" class="mt-4">
-      <div class="instruction">
-        <p>
-          1. 点击地图右上角的
-          <strong>多边形工具</strong>
-          开始绘制
-        </p>
-        <p>2. 在地图上点击添加顶点，围成封闭图形</p>
-        <p>3. 双击完成绘制</p>
-        <p>4. 系统会自动计算面积和坐标</p>
-        <p>5. 输入田块名称后点击保存</p>
-        <p>6. 可以使用编辑和删除工具调整图形</p>
-      </div>
-    </NCard>
   </div>
 </template>
 
