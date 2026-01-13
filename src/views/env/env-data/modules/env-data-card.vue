@@ -68,72 +68,12 @@ async function getLatestEnvData() {
   }
 }
 
+// ... existing code ...
 // 确保计算属性依赖于 latestEnvData 和 updateTrigger
 const cardData = computed<CardData[]>(() => {
   // 显式引用这两个响应式变量以建立依赖关系
   const _envData = latestEnvData.value;
   const _trigger = updateTrigger.value;
-
-  if (!_envData) {
-    // Return default values when no data is available
-    return [
-      {
-        key: 'airTemp',
-        title: '空气温度',
-        value: 0,
-        unit: '°C',
-        color: {
-          start: '#ec4786',
-          end: '#b955a4'
-        },
-        icon: 'ant-design:bar-chart-outlined'
-      },
-      {
-        key: 'airHumidity',
-        title: '空气湿度',
-        value: 0,
-        unit: '%',
-        color: {
-          start: '#865ec0',
-          end: '#5144b4'
-        },
-        icon: 'ant-design:money-collect-outlined'
-      },
-      {
-        key: 'soilMoisture',
-        title: '土壤湿度',
-        value: 0,
-        unit: '%',
-        color: {
-          start: '#56cdf3',
-          end: '#719de3'
-        },
-        icon: 'carbon:document-download'
-      },
-      {
-        key: 'co2Ppm',
-        title: 'CO2浓度',
-        value: 0,
-        unit: 'ppm',
-        color: {
-          start: '#fcbc25',
-          end: '#f68057'
-        },
-        icon: 'ant-design:trademark-circle-outlined'
-      },
-      {
-        key: 'lightLux',
-        title: '光照强度',
-        value: 0,
-        unit: 'lux',
-        color: {
-          start: '#f68057',
-          end: '#fcbc25'
-        },
-        icon: 'ant-design:bulb-outlined'
-      }
-    ];
-  }
 
   // 转换字符串为数字，处理可能的类型问题
   const parseNumber = (value: any): number => {
@@ -146,64 +86,58 @@ const cardData = computed<CardData[]>(() => {
     return 0;
   };
 
-  // Return actual data from API
-  return [
+  // 定义环境数据配置
+  const envConfig = [
     {
       key: 'airTemp',
       title: '空气温度',
-      value: parseNumber(_envData.airTemp),
       unit: '°C',
-      color: {
-        start: '#ec4786',
-        end: '#b955a4'
-      },
-      icon: 'ant-design:bar-chart-outlined'
+      color: { start: '#ec4786', end: '#b955a4' },
+      icon: 'mdi:temperature'
     },
     {
       key: 'airHumidity',
       title: '空气湿度',
-      value: parseNumber(_envData.airHumidity),
       unit: '%',
-      color: {
-        start: '#865ec0',
-        end: '#5144b4'
-      },
-      icon: 'ant-design:money-collect-outlined'
+      color: { start: '#865ec0', end: '#5144b4' },
+      icon: 'mdi:temperature-lines'
     },
     {
       key: 'soilMoisture',
       title: '土壤湿度',
-      value: parseNumber(_envData.soilMoisture),
       unit: '%',
-      color: {
-        start: '#56cdf3',
-        end: '#719de3'
-      },
-      icon: 'carbon:document-download'
+      color: { start: '#56cdf3', end: '#719de3' },
+      icon: 'mdi:water-temperature-outline'
     },
     {
       key: 'co2Ppm',
       title: 'CO2浓度',
-      value: parseNumber(_envData.co2Ppm),
       unit: 'ppm',
-      color: {
-        start: '#fcbc25',
-        end: '#f68057'
-      },
-      icon: 'ant-design:trademark-circle-outlined'
+      color: { start: '#fcbc25', end: '#f68057' },
+      icon: 'mdi:molecule-co2'
     },
     {
       key: 'lightLux',
       title: '光照强度',
-      value: parseNumber(_envData.lightLux),
       unit: 'lux',
-      color: {
-        start: '#f68057',
-        end: '#fcbc25'
-      },
-      icon: 'ant-design:bulb-outlined'
+      color: { start: '#f68057', end: '#fcbc25' },
+      icon: 'mdi:day-temperature'
     }
   ];
+
+  if (!_envData) {
+    // 返回默认值配置
+    return envConfig.map(config => ({
+      ...config,
+      value: 0
+    }));
+  }
+
+  // 返回实际数据配置
+  return envConfig.map(config => ({
+    ...config,
+    value: parseNumber(_envData[config.key as keyof Api.Env.EnvData])
+  }));
 });
 
 interface GradientBgProps {
