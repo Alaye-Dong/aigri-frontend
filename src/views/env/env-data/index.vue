@@ -10,7 +10,7 @@ defineOptions({
 });
 
 const farmlandId = ref<string | null>(null);
-const deviceSerialNo = ref<string | null>(null);
+const deviceId = ref<string | null>(null);
 
 const farmlandOptions = ref<CommonType.Option<string>[]>([]);
 const deviceOptions = ref<CommonType.Option<string>[]>([]);
@@ -47,14 +47,14 @@ async function getDeviceList(fId?: string) {
   if (!error && data) {
     deviceOptions.value = data.records.map(item => ({
       label: `${item.serialNo} (${item.type})`,
-      value: item.serialNo
+      value: String(item.id)
     }));
   }
 }
 
 function handleFarmlandChange(val: string | null) {
   farmlandId.value = val;
-  deviceSerialNo.value = null; // Reset device when farmland changes
+  deviceId.value = null; // Reset device when farmland changes
   getDeviceList(val || undefined);
 }
 
@@ -82,7 +82,7 @@ onMounted(() => {
         <NSpace align="center">
           <span>设备:</span>
           <NSelect
-            v-model:value="deviceSerialNo"
+            v-model:value="deviceId"
             :options="deviceOptions"
             placeholder="请选择设备"
             clearable
@@ -95,10 +95,18 @@ onMounted(() => {
 
     <NGrid :x-gap="16" :y-gap="16" responsive="screen" item-responsive>
       <NGridItem span="24 l:12">
-        <EnvTrendChart :farmland-name="selectedFarmlandName" :device-serial-no="deviceSerialNo" />
+        <EnvTrendChart
+          :farmland-name="selectedFarmlandName"
+          :farmland-id="farmlandId"
+          :device-id="deviceId"
+        />
       </NGridItem>
       <NGridItem span="24 l:12">
-        <EnvAdvancedChart :farmland-name="selectedFarmlandName" :device-serial-no="deviceSerialNo" />
+        <EnvAdvancedChart
+          :farmland-name="selectedFarmlandName"
+          :farmland-id="farmlandId"
+          :device-id="deviceId"
+        />
       </NGridItem>
     </NGrid>
   </div>

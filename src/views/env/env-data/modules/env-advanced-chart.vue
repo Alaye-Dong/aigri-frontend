@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { watch, onMounted } from 'vue';
+import { onMounted, watch } from 'vue';
+import { fetchGetEnvDataList } from '@/service/api/env/env-data';
 import { useAppStore } from '@/store/modules/app';
 import { useEcharts } from '@/hooks/common/echarts';
-import { fetchGetEnvDataList } from '@/service/api/env/env-data';
 
 defineOptions({
   name: 'EnvAdvancedChart'
@@ -51,6 +51,8 @@ const { domRef, updateOptions } = useEcharts(() => ({
 const props = defineProps<{
   farmlandName?: string | null;
   deviceSerialNo?: string | null;
+  farmlandId?: string | null;
+  deviceId?: string | null;
 }>();
 
 async function getData() {
@@ -58,7 +60,9 @@ async function getData() {
     current: 1,
     size: 50,
     farmlandName: props.farmlandName,
-    deviceSerialNo: props.deviceSerialNo
+    deviceSerialNo: props.deviceSerialNo,
+    farmlandId: props.farmlandId,
+    deviceId: props.deviceId
   });
 
   if (!error && data) {
@@ -78,11 +82,17 @@ async function getData() {
           data: co2Series,
           itemStyle: { color: '#8A2BE2' },
           areaStyle: {
-             color: {
-               type: 'linear',
-               x: 0, y: 0, x2: 0, y2: 1,
-               colorStops: [{ offset: 0, color: 'rgba(138, 43, 226, 0.3)' }, { offset: 1, color: 'rgba(138, 43, 226, 0.01)' }]
-             }
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                { offset: 0, color: 'rgba(138, 43, 226, 0.3)' },
+                { offset: 1, color: 'rgba(138, 43, 226, 0.01)' }
+              ]
+            }
           }
         },
         {
@@ -93,11 +103,17 @@ async function getData() {
           data: lightSeries,
           itemStyle: { color: '#FFD700' },
           areaStyle: {
-             color: {
-               type: 'linear',
-               x: 0, y: 0, x2: 0, y2: 1,
-               colorStops: [{ offset: 0, color: 'rgba(255, 215, 0, 0.3)' }, { offset: 1, color: 'rgba(255, 215, 0, 0.01)' }]
-             }
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                { offset: 0, color: 'rgba(255, 215, 0, 0.3)' },
+                { offset: 1, color: 'rgba(255, 215, 0, 0.01)' }
+              ]
+            }
           }
         }
       ];
@@ -116,7 +132,7 @@ watch(
 );
 
 watch(
-  () => [props.farmlandName, props.deviceSerialNo],
+  () => [props.farmlandName, props.deviceSerialNo, props.farmlandId, props.deviceId],
   () => {
     getData();
   }

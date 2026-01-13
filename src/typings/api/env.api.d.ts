@@ -139,7 +139,7 @@ declare namespace Api {
     }>;
 
     type EnvDataSearchParams = CommonType.RecordNullable<
-      Pick<EnvData, 'deviceSerialNo' | 'farmlandName' | 'collectTime'> & Common.CommonSearchParams
+      Pick<EnvData, 'deviceSerialNo' | 'farmlandName' | 'collectTime' | 'deviceId' | 'farmlandId'> & Common.CommonSearchParams
     >;
 
     type EnvDataList = Common.PaginatingQueryRecord<EnvData>;

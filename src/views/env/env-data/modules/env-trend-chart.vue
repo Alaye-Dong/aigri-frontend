@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { watch, onMounted } from 'vue';
+import { onMounted, watch } from 'vue';
+import { fetchGetEnvDataList } from '@/service/api/env/env-data';
 import { useAppStore } from '@/store/modules/app';
 import { useEcharts } from '@/hooks/common/echarts';
-import { fetchGetEnvDataList } from '@/service/api/env/env-data';
 import { $t } from '@/locales';
 
 defineOptions({
@@ -42,6 +42,8 @@ const { domRef, updateOptions } = useEcharts(() => ({
 const props = defineProps<{
   farmlandName?: string | null;
   deviceSerialNo?: string | null;
+  farmlandId?: string | null;
+  deviceId?: string | null;
 }>();
 
 async function getData() {
@@ -49,7 +51,9 @@ async function getData() {
     current: 1,
     size: 50,
     farmlandName: props.farmlandName,
-    deviceSerialNo: props.deviceSerialNo
+    deviceSerialNo: props.deviceSerialNo,
+    farmlandId: props.farmlandId,
+    deviceId: props.deviceId
   });
 
   if (!error && data) {
@@ -110,7 +114,7 @@ watch(
 );
 
 watch(
-  () => [props.farmlandName, props.deviceSerialNo],
+  () => [props.farmlandName, props.deviceSerialNo, props.farmlandId, props.deviceId],
   () => {
     getData();
   }
