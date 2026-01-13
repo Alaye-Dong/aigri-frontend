@@ -72,8 +72,8 @@ async function getLatestEnvData() {
 // 确保计算属性依赖于 latestEnvData 和 updateTrigger
 const cardData = computed<CardData[]>(() => {
   // 显式引用这两个响应式变量以建立依赖关系
-  const _envData = latestEnvData.value;
-  const _trigger = updateTrigger.value;
+  const envData = latestEnvData.value;
+  const trigger = updateTrigger.value;
 
   // 转换字符串为数字，处理可能的类型问题
   const parseNumber = (value: any): number => {
@@ -113,7 +113,7 @@ const cardData = computed<CardData[]>(() => {
       key: 'co2Ppm',
       title: 'CO2浓度',
       unit: 'ppm',
-      color: { start: '#fcbc25', end: '#f68057' },
+      color: { start: '#1abc9c', end: '#f39c12' },
       icon: 'mdi:molecule-co2'
     },
     {
@@ -125,7 +125,7 @@ const cardData = computed<CardData[]>(() => {
     }
   ];
 
-  if (!_envData) {
+  if (!envData) {
     // 返回默认值配置
     return envConfig.map(config => ({
       ...config,
@@ -136,7 +136,7 @@ const cardData = computed<CardData[]>(() => {
   // 返回实际数据配置
   return envConfig.map(config => ({
     ...config,
-    value: parseNumber(_envData[config.key as keyof Api.Env.EnvData])
+    value: parseNumber(envData[config.key as keyof Api.Env.EnvData])
   }));
 });
 
@@ -160,7 +160,6 @@ onMounted(() => {
 watch(
   () => [props.farmlandId, props.deviceId],
   ([newFarmlandId, newDeviceId], [oldFarmlandId, oldDeviceId]) => {
-    console.log('Props changed:', { oldFarmlandId, oldDeviceId }, '->', { newFarmlandId, newDeviceId });
     if (newFarmlandId !== oldFarmlandId || newDeviceId !== oldDeviceId) {
       getLatestEnvData();
     }
