@@ -3,7 +3,6 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { createReusableTemplate } from '@vueuse/core';
 import { fetchGetLatestByDevice, fetchGetLatestByFarmland } from '@/service/api/env/env-data';
 import { useThemeStore } from '@/store/modules/theme';
-
 defineOptions({
   name: 'EnvDataCard'
 });
@@ -37,7 +36,7 @@ const updateTrigger = ref(0); // 使用 ref 来触发更新
 async function getLatestEnvData() {
   if (!props.farmlandId && !props.deviceId) {
     latestEnvData.value = null;
-    updateTrigger.value++;
+    updateTrigger.value += 1;
     return;
   }
 
@@ -54,15 +53,14 @@ async function getLatestEnvData() {
 
     if (response && !response.error && response.data) {
       latestEnvData.value = response.data;
-      updateTrigger.value++; // 增加触发器值以强制重新计算
+      updateTrigger.value += 1; // 增加触发器值以强制重新计算
     } else {
       latestEnvData.value = null;
-      updateTrigger.value++;
+      updateTrigger.value += 1;
     }
-  } catch (error) {
-    console.error('Failed to fetch latest environment data:', error);
+  } catch {
     latestEnvData.value = null;
-    updateTrigger.value++;
+    updateTrigger.value += 1;
   } finally {
     loading.value = false;
   }
@@ -73,7 +71,6 @@ async function getLatestEnvData() {
 const cardData = computed<CardData[]>(() => {
   // 显式引用这两个响应式变量以建立依赖关系
   const envData = latestEnvData.value;
-  const trigger = updateTrigger.value;
 
   // 转换字符串为数字，处理可能的类型问题
   const parseNumber = (value: any): number => {
