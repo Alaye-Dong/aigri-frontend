@@ -41,14 +41,20 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
     {
       key: 'userName',
       title: $t('page.system.user.userName'),
-      align: 'center',
-      minWidth: 100
-    },
-    {
-      key: 'realName',
-      title: $t('page.system.user.realName'),
-      align: 'center',
-      minWidth: 100
+      align: 'left',
+      minWidth: 100,
+      ellipsis: true,
+      render: row => {
+        return (
+          <div class="flex items-center justify-center gap-2">
+            <NAvatar class="bg-primary">{row.realName.charAt(0)}</NAvatar>
+            <div class="max-w-160px flex flex-col">
+              <NEllipsis>{row.userName}</NEllipsis>
+              <NEllipsis>{row.realName}</NEllipsis>
+            </div>
+          </div>
+        );
+      }
     },
     {
       key: 'phone',
@@ -71,7 +77,7 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
         return (
           <StatusSwitch
             v-model:value={row.status}
-            disabled={row.userId === 1}
+            disabled={row.userId === 1 || row.userId === '1'}
             info={row.userName}
             onSubmitted={(value, callback) => handleStatusChange(row, value, callback)}
           />
@@ -119,6 +125,7 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
               tooltipContent={$t('common.delete')}
               popconfirmContent={$t('common.confirmDelete')}
               onPositiveClick={() => handleDelete(row.userId)}
+              disabled={row.userId === 1 || row.userId === '1'}
             />
           );
         };
