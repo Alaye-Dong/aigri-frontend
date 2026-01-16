@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useAppStore } from '@/store/modules/app';
 import { useAuthStore } from '@/store/modules/auth';
 import { $t } from '@/locales';
+import SvgIcon from '@/components/custom/svg-icon.vue';
 
 defineOptions({
   name: 'HeaderBanner'
@@ -44,7 +45,7 @@ const statisticData = computed<StatisticData[]>(() => [
       <NGi span="24 s:24 m:18">
         <div class="flex-y-center">
           <div class="size-72px shrink-0 overflow-hidden rd-1/2">
-            <img src="@/assets/imgs/soybean.jpg" class="size-full" />
+            <SvgIcon icon="ph:user-circle" class="size-full" />
           </div>
           <div class="pl-12px">
             <h3 class="text-18px font-semibold">
