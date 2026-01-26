@@ -1,6 +1,6 @@
 <script setup lang="tsx">
 import { ref } from 'vue';
-import { NAvatar, NButton, NDivider, NEllipsis, NTag } from 'naive-ui';
+import { NAvatar, NDivider, NEllipsis } from 'naive-ui';
 import { fetchBatchDeleteUser, fetchGetUserList, fetchUpdateUserStatus } from '@/service/api/system';
 import { defaultTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
 import { $t } from '@/locales';
