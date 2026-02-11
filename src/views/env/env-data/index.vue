@@ -96,14 +96,9 @@ onMounted(() => {
 
     <EnvDataCard :farmland-id="farmlandId" :device-id="deviceId" />
 
-    <NGrid :x-gap="16" :y-gap="16" responsive="screen" item-responsive>
-      <NGridItem span="24 l:12">
-        <EnvTrendChart :farmland-name="selectedFarmlandName" :farmland-id="farmlandId" :device-id="deviceId" />
-      </NGridItem>
-      <NGridItem span="24 l:12">
-        <EnvAdvancedChart :farmland-name="selectedFarmlandName" :farmland-id="farmlandId" :device-id="deviceId" />
-      </NGridItem>
-    </NGrid>
+    <EnvTrendChart :farmland-name="selectedFarmlandName" :farmland-id="farmlandId" :device-id="deviceId" />
+
+    <EnvAdvancedChart :farmland-name="selectedFarmlandName" :farmland-id="farmlandId" :device-id="deviceId" />
   </div>
 </template>
 
