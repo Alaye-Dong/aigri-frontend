@@ -29,6 +29,12 @@ declare namespace Api {
     /** 设备操作参数 */
     type DeviceOperateParams = CommonType.RecordNullable<Device>;
 
+    /** 设备绑定参数 */
+    type DeviceBindParams = {
+      deviceId: CommonType.IdType;
+      farmlandId: CommonType.IdType;
+    };
+
     /** 告警规则信息 */
     type AlertRule = Common.CommonRecord<{
       /** 规则ID */
@@ -139,7 +145,8 @@ declare namespace Api {
     }>;
 
     type EnvDataSearchParams = CommonType.RecordNullable<
-      Pick<EnvData, 'deviceSerialNo' | 'farmlandName' | 'collectTime' | 'deviceId' | 'farmlandId'> & Common.CommonSearchParams
+      Pick<EnvData, 'deviceSerialNo' | 'farmlandName' | 'collectTime' | 'deviceId' | 'farmlandId'> &
+        Common.CommonSearchParams
     >;
 
     type EnvDataList = Common.PaginatingQueryRecord<EnvData>;
