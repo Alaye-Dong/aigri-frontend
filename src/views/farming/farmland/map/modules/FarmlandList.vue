@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { NEmpty, NInput, NSpin } from 'naive-ui';
+import { NButton, NEmpty, NInput, NSpin } from 'naive-ui';
 import SvgIcon from '@/components/custom/svg-icon.vue';
 
 defineOptions({ name: 'FarmlandList' });
@@ -37,10 +37,12 @@ function formatDate(dateStr: string | null | undefined): string {
     <!-- 顶部标题栏 -->
     <div class="panel-header">
       <span class="panel-title">地块列表</span>
-      <button class="add-btn" @click="emit('add')">
-        <SvgIcon icon="material-symbols:add" class="add-icon" />
-        新建
-      </button>
+      <NButton size="small" ghost type="primary" @click="emit('add')">
+        <template #icon>
+          <icon-ic-round-plus class="text-icon" />
+        </template>
+        {{ $t('common.add') }}
+      </NButton>
     </div>
 
     <!-- 搜索框 -->
@@ -69,7 +71,9 @@ function formatDate(dateStr: string | null | undefined): string {
           <!-- 标题行 -->
           <div class="card-top">
             <span class="card-name">{{ item.name }}</span>
-            <span class="area-badge">{{ item.areaSize ? `${item.areaSize} 亩` : '未知' }}</span>
+            <NTag type="success" size="small" round class="ml-8px">
+              {{ item.areaSize ? `${item.areaSize} 亩` : '未知' }}
+            </NTag>
           </div>
 
           <!-- 地址 -->
@@ -99,11 +103,6 @@ function formatDate(dateStr: string | null | undefined): string {
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
   overflow: hidden;
-}
-
-/* 暗色主题 */
-:root.dark .farmland-list-panel {
-  background: #1e1e2e;
 }
 
 .panel-header {

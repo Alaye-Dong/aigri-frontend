@@ -230,10 +230,6 @@ defineExpose({ restoreValidation });
   overflow: hidden;
 }
 
-:root.dark .info-panel {
-  background: #1e1e2e;
-}
-
 /* ---- 空态 ---- */
 .empty-state {
   flex: 1;
