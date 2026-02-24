@@ -323,70 +323,17 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="map-wrapper">
-    <div ref="mapContainer" class="map-container" />
-    <div v-if="isDrawing" class="drawing-tip">
-      <div class="tip-text">点击地图添加顶点，双击完成绘制</div>
-      <div class="tip-count">已添加 {{ vertexCount }} 个顶点</div>
+  <div class="map-wrapper relative h-full min-w-0 flex-1 overflow-hidden rounded-8px shadow-md">
+    <div ref="mapContainer" class="map-container z-0 h-full w-full" />
+    <div
+      v-if="isDrawing"
+      class="drawing-tip absolute left-1/2 top-16px z-1000 min-w-260px animate-pulse rounded-8px bg-green-600/95 px-24px py-12px text-center text-white shadow-lg -translate-x-1/2"
+    >
+      <div class="tip-text mb-4px text-13px font-500">点击地图添加顶点，双击完成绘制</div>
+      <div class="tip-count text-15px text-yellow-300 font-700">已添加 {{ vertexCount }} 个顶点</div>
     </div>
   </div>
 </template>
-
-<style scoped>
-.map-wrapper {
-  flex: 1;
-  position: relative;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
-  height: 100%;
-  min-width: 0;
-}
-
-.map-container {
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-}
-
-.drawing-tip {
-  position: absolute;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(24, 160, 88, 0.95);
-  color: #fff;
-  padding: 12px 24px;
-  border-radius: 8px;
-  z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  animation: pulse 2s ease-in-out infinite;
-  text-align: center;
-  min-width: 260px;
-}
-
-.tip-text {
-  font-size: 13px;
-  font-weight: 500;
-  margin-bottom: 4px;
-}
-
-.tip-count {
-  font-size: 15px;
-  font-weight: 700;
-  color: #ffd700;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.82;
-  }
-}
-</style>
 
 <style>
 /* 地图地块标签（全局，因为 Leaflet 在 DOM 根处渲染） */

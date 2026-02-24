@@ -188,7 +188,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="farmland-map-page">
+  <div class="farmland-map-page box-border h-[calc(100vh-120px)] min-h-500px flex gap-12px p-16px">
     <!-- 左侧：地块列表 -->
     <FarmlandList
       :farmlands="farmlands"
@@ -226,14 +226,3 @@ onMounted(() => {
     />
   </div>
 </template>
-
-<style scoped>
-.farmland-map-page {
-  display: flex;
-  gap: 12px;
-  height: calc(100vh - 120px);
-  padding: 16px;
-  box-sizing: border-box;
-  min-height: 500px;
-}
-</style>
