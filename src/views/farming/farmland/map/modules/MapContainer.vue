@@ -1,16 +1,22 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useMessage } from 'naive-ui';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import 'leaflet-draw';
 
-defineOptions({
-  name: 'MapContainer'
-});
+defineOptions({ name: 'MapContainer' });
+
+const props = defineProps<{
+  farmlands: Api.Farming.Farmland[];
+  selectedId: CommonType.IdType | null;
+  /** 是否处于新建/编辑绘制模式 */
+  drawMode: boolean;
+}>();
 
 const emit = defineEmits<{
+  (e: 'select', farmland: Api.Farming.Farmland): void;
   (
     e: 'update:data',
     val: { coordinates: Array<[number, number]>; area: number; areaSize: number; location: string }
@@ -24,109 +30,149 @@ let map: L.Map | null = null;
 let drawControl: L.Control.Draw | null = null;
 let drawnItems: L.FeatureGroup | null = null;
 
+/** 所有地块渲染层：id -> { polygon, label } */
+const farmlandLayers = new Map<CommonType.IdType, { polygon: L.Polygon; label: L.Marker }>();
+
 const isDrawing = ref(false);
 const vertexCount = ref(0);
 
-// 逆地理编码获取地址
+// ---------- 工具函数 ----------
+
+const deg2rad = (deg: number) => (deg * Math.PI) / 180;
+
+const calculateArea = (latlngs: L.LatLng[]): number => {
+  const earthRadius = 6371000;
+  let area = 0;
+  const n = latlngs.length;
+  if (n < 3) return 0;
+  for (let i = 0; i < n; i++) {
+    const p1 = latlngs[i];
+    const p2 = latlngs[(i + 1) % n];
+    area += deg2rad(p2.lng - p1.lng) * (2 + Math.sin(deg2rad(p1.lat)) + Math.sin(deg2rad(p2.lat)));
+  }
+  return Math.abs((area * earthRadius * earthRadius) / 2);
+};
+
 const fetchAddress = async (lat: number, lng: number): Promise<string> => {
   try {
-    // 优先使用 Nominatim (OSM) 进行免费逆地理编码，设置语言为中文
-    const response = await fetch(
+    const res = await fetch(
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
-      {
-        headers: {
-          'Accept-Language': 'zh-CN,zh;q=0.9'
-        }
-      }
+      { headers: { 'Accept-Language': 'zh-CN,zh;q=0.9' } }
     );
-    const data = await response.json();
-
-    if (data && data.address) {
-      const addr = data.address;
-      // 按照中国地址习惯拼接: 省 + 市 + 区/县 + 镇/街道 + 村/路/地名
-      const parts = [
-        addr.state || addr.province || '',
-        addr.city || addr.town || addr.municipality || '',
-        addr.county || addr.district || '',
-        addr.suburb || addr.township || addr.village || '',
-        addr.road || addr.neighbourhood || addr.pedestrian || ''
-      ].filter(Boolean);
-
-      return parts.join('');
+    const data = await res.json();
+    if (data?.address) {
+      const a = data.address;
+      return [
+        a.state || a.province || '',
+        a.city || a.town || a.municipality || '',
+        a.county || a.district || '',
+        a.suburb || a.township || a.village || '',
+        a.road || a.neighbourhood || ''
+      ]
+        .filter(Boolean)
+        .join('');
     }
-  } catch (error) {
-    console.error('获取地址失败:', error);
+  } catch (_) {
+    // ignore
   }
   return '';
 };
 
-const deg2rad = (deg: number): number => {
-  return (deg * Math.PI) / 180;
-};
+// ---------- 地块多边形渲染 ----------
 
-// 计算面积
-const calculateArea = (latlngs: L.LatLng[]): number => {
-  const earthRadius = 6371000;
-  let area = 0;
-  const points = latlngs.length;
+function getPolygonStyle(id: CommonType.IdType, selected: boolean) {
+  return selected
+    ? { color: '#18a058', weight: 3, fillOpacity: 0.35, fillColor: '#52c41a' }
+    : { color: '#3388ff', weight: 2, fillOpacity: 0.2, fillColor: '#3388ff' };
+}
 
-  if (points < 3) return 0;
+function createLabel(name: string, latlng: L.LatLng): L.Marker {
+  const icon = L.divIcon({
+    className: '',
+    html: `<div class="farmland-map-label">${name}</div>`,
+    iconAnchor: [0, 0]
+  });
+  return L.marker(latlng, { icon, interactive: false, zIndexOffset: 0 });
+}
 
-  /* eslint no-plusplus: ["error", { "allowForLoopAfterthoughts": true }] */
-  for (let i = 0; i < points; i++) {
-    const p1 = latlngs[i];
-    const p2 = latlngs[(i + 1) % points];
-    area += deg2rad(p2.lng - p1.lng) * (2 + Math.sin(deg2rad(p1.lat)) + Math.sin(deg2rad(p2.lat)));
-  }
+function renderFarmlands() {
+  if (!map) return;
 
-  area = (area * earthRadius * earthRadius) / 2;
-  return Math.abs(area);
-};
+  // 移除旧层
+  farmlandLayers.forEach(({ polygon, label }) => {
+    polygon.remove();
+    label.remove();
+  });
+  farmlandLayers.clear();
 
-let CoordinatesUpdatedFromSetPolygon = false;
+  props.farmlands.forEach(farmland => {
+    if (!farmland.polygonPath) return;
 
-// 处理多边形更新
+    let coords: Array<[number, number]>;
+    try {
+      coords = JSON.parse(farmland.polygonPath);
+    } catch (_) {
+      return;
+    }
+    if (!coords || coords.length < 3) return;
+
+    const latlngs = coords.map(c => L.latLng(c[0], c[1]));
+    const selected = farmland.id === props.selectedId;
+    const style = getPolygonStyle(farmland.id, selected);
+
+    const polygon = L.polygon(latlngs, style).addTo(map!);
+    const center = polygon.getBounds().getCenter();
+    const label = createLabel(farmland.name, center).addTo(map!);
+
+    polygon.on('click', () => {
+      emit('select', farmland);
+    });
+
+    farmlandLayers.set(farmland.id, { polygon, label });
+  });
+}
+
+function updateSelection() {
+  farmlandLayers.forEach(({ polygon }, id) => {
+    const selected = id === props.selectedId;
+    polygon.setStyle(getPolygonStyle(id, selected));
+    if (selected) {
+      const bounds = polygon.getBounds();
+      map?.fitBounds(bounds, { padding: [40, 40] });
+    }
+  });
+}
+
+// ---------- 绘制区域 ----------
+
 const handlePolygonUpdate = async (layer: any) => {
-  // 获取坐标点
   let latlngs = layer.getLatLngs();
-  // Handle nested arrays (multipolygon/holes) - usually getLatLngs returns [LatLng[]] for simple polygon
   if (Array.isArray(latlngs) && Array.isArray(latlngs[0]) && !('lat' in latlngs[0])) {
     latlngs = latlngs[0];
   }
-
-  const coordinates: Array<[number, number]> = latlngs.map((latlng: L.LatLng) => [latlng.lat, latlng.lng]);
-
-  // 计算中心点用于逆地理编码
+  const coordinates: Array<[number, number]> = latlngs.map((ll: L.LatLng) => [ll.lat, ll.lng]);
   const center = layer.getBounds().getCenter();
   const location = await fetchAddress(center.lat, center.lng);
-
-  // 计算面积
   const area = calculateArea(latlngs);
   const areaSize = Number((area / 666.67).toFixed(2));
-
   emit('update:data', { coordinates, area, areaSize, location });
-
   isDrawing.value = false;
   emit('update:drawing', false);
-
-  if (!CoordinatesUpdatedFromSetPolygon) {
-    message.success(`已更新田块，面积约为 ${areaSize} 亩 (${(area / 10000).toFixed(2)} 公顷)`);
-  }
-  CoordinatesUpdatedFromSetPolygon = false;
+  message.success(`已更新田块，面积约 ${areaSize} 亩`);
 };
 
-// 初始化地图
+// ---------- 初始化 ----------
+
 const initMap = () => {
   if (!mapContainer.value) return;
 
-  // 创建地图实例
   map = L.map(mapContainer.value, {
     maxZoom: 22,
     minZoom: 3,
     attributionControl: false
   }).setView([28.415, 116.043], 13);
 
-  // 添加高德卫星影像图层
+  // 卫星底图
   L.tileLayer('http://webst02.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}', {
     maxNativeZoom: 16,
     maxZoom: 22,
@@ -135,7 +181,7 @@ const initMap = () => {
     errorTileUrl: ''
   }).addTo(map);
 
-  // 叠加路网标注图层
+  // 路网标注
   L.tileLayer('http://webst02.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}', {
     maxNativeZoom: 18,
     maxZoom: 22,
@@ -143,11 +189,11 @@ const initMap = () => {
     errorTileUrl: ''
   }).addTo(map);
 
-  // 创建绘制图层组
+  // 绘制图层组
   drawnItems = new L.FeatureGroup();
   map.addLayer(drawnItems);
 
-  // 配置绘制控件
+  // 绘制控件
   drawControl = new L.Control.Draw({
     position: 'topright',
     draw: {
@@ -156,15 +202,8 @@ const initMap = () => {
         showArea: false,
         metric: true,
         repeatMode: false,
-        drawError: {
-          color: '#e74c3c',
-          message: '<strong>错误!</strong> 不能自相交!'
-        },
-        shapeOptions: {
-          color: '#3388ff',
-          weight: 3,
-          fillOpacity: 0.3
-        },
+        drawError: { color: '#e74c3c', message: '<strong>错误!</strong> 不能自相交!' },
+        shapeOptions: { color: '#18a058', weight: 3, fillOpacity: 0.3 },
         icon: new L.DivIcon({
           iconSize: new L.Point(8, 8),
           className: 'leaflet-div-icon leaflet-editing-icon'
@@ -180,95 +219,96 @@ const initMap = () => {
       marker: false,
       circlemarker: false
     },
-    edit: {
-      featureGroup: drawnItems,
-      remove: true
-    }
+    edit: { featureGroup: drawnItems, remove: true }
   });
 
-  map.addControl(drawControl);
+  // 默认不添加控件，由 drawMode 控制
+  if (props.drawMode) {
+    map.addControl(drawControl);
+  }
 
-  // 监听绘制完成事件
   map.on(L.Draw.Event.CREATED, async (event: any) => {
-    const layer = event.layer;
-    drawnItems?.addLayer(layer);
-    await handlePolygonUpdate(layer);
+    drawnItems?.clearLayers();
+    drawnItems?.addLayer(event.layer);
+    await handlePolygonUpdate(event.layer);
   });
 
-  // 监听编辑事件
   map.on(L.Draw.Event.EDITED, async (event: any) => {
-    const layers = event.layers;
-    // 由于只允许绘制一个多边形，我们只需要处理第一个图层
-    const layer = layers.getLayers()[0];
-    if (layer) {
-      await handlePolygonUpdate(layer);
-      message.success('田块形状已更新');
-    }
+    const layer = event.layers.getLayers()[0];
+    if (layer) await handlePolygonUpdate(layer);
   });
 
-  // 监听绘制开始
   map.on(L.Draw.Event.DRAWSTART, () => {
     isDrawing.value = true;
     emit('update:drawing', true);
     vertexCount.value = 0;
   });
 
-  // 监听绘制停止
   map.on(L.Draw.Event.DRAWSTOP, () => {
     isDrawing.value = false;
     emit('update:drawing', false);
     vertexCount.value = 0;
   });
 
-  // 监听绘制顶点事件
   map.on(L.Draw.Event.DRAWVERTEX, () => {
     vertexCount.value += 1;
   });
 
-  // 监听删除事件
   map.on(L.Draw.Event.DELETED, () => {
     emit('update:data', { coordinates: [], area: 0, areaSize: 0, location: '' });
-    message.info('已删除绘制的田块');
   });
+
+  // 初次渲染地块
+  renderFarmlands();
 };
 
-// 清空地图
-const clearMap = () => {
+// ---------- 对外方法 ----------
+
+function clearDrawn() {
   drawnItems?.clearLayers();
-};
+}
 
-// 设置多边形
-const setPolygon = (coordinates: Array<[number, number]>) => {
-  if (!map || !drawnItems) return;
-
-  clearMap(); // 清除现有绘制
-
-  if (coordinates.length < 3) return;
-
-  // 转换为 Leaflet 坐标点
+function setPolygon(coordinates: Array<[number, number]>) {
+  if (!map || !drawnItems || coordinates.length < 3) return;
+  drawnItems.clearLayers();
   const latlngs = coordinates.map(c => L.latLng(c[0], c[1]));
-
-  // 创建多边形并在 FeatureGroup 中显示，这样就可以被编辑
-  const polygon = L.polygon(latlngs, {
-    color: '#3388ff',
-    weight: 3,
-    fillOpacity: 0.3
-  });
-
+  const polygon = L.polygon(latlngs, { color: '#18a058', weight: 3, fillOpacity: 0.3 });
   drawnItems.addLayer(polygon);
-
-  // 调整地图视野以显示多边形
   map.fitBounds(polygon.getBounds());
-
-  // 主动触发一次更新，重新计算面积
-  CoordinatesUpdatedFromSetPolygon = true;
   handlePolygonUpdate(polygon);
-};
+}
 
-defineExpose({
-  clearMap,
-  setPolygon
-});
+function flyToSelected() {
+  if (!props.selectedId) return;
+  const entry = farmlandLayers.get(props.selectedId);
+  if (entry) {
+    map?.fitBounds(entry.polygon.getBounds(), { padding: [40, 40] });
+  }
+}
+
+defineExpose({ clearDrawn, setPolygon });
+
+// ---------- 监听 ----------
+
+watch(() => props.farmlands, renderFarmlands, { deep: true });
+
+watch(
+  () => props.selectedId,
+  () => updateSelection()
+);
+
+watch(
+  () => props.drawMode,
+  val => {
+    if (!map || !drawControl) return;
+    if (val) {
+      map.addControl(drawControl);
+    } else {
+      map.removeControl(drawControl);
+      drawnItems?.clearLayers();
+    }
+  }
+);
 
 onMounted(() => {
   setTimeout(() => {
@@ -277,16 +317,14 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  if (map) {
-    map.remove();
-    map = null;
-  }
+  map?.remove();
+  map = null;
 });
 </script>
 
 <template>
   <div class="map-wrapper">
-    <div ref="mapContainer" class="map-container"></div>
+    <div ref="mapContainer" class="map-container" />
     <div v-if="isDrawing" class="drawing-tip">
       <div class="tip-text">点击地图添加顶点，双击完成绘制</div>
       <div class="tip-count">已添加 {{ vertexCount }} 个顶点</div>
@@ -300,9 +338,9 @@ onUnmounted(() => {
   position: relative;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  /* 确保在父容器中占满 */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
   height: 100%;
+  min-width: 0;
 }
 
 .map-container {
@@ -316,28 +354,27 @@ onUnmounted(() => {
   top: 16px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(51, 136, 255, 0.95);
-  color: white;
-  padding: 14px 28px;
+  background: rgba(24, 160, 88, 0.95);
+  color: #fff;
+  padding: 12px 24px;
   border-radius: 8px;
   z-index: 1000;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   animation: pulse 2s ease-in-out infinite;
   text-align: center;
-  min-width: 280px;
+  min-width: 260px;
 }
 
 .tip-text {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   margin-bottom: 4px;
 }
 
 .tip-count {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: #ffd700;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 @keyframes pulse {
@@ -346,43 +383,40 @@ onUnmounted(() => {
     opacity: 1;
   }
   50% {
-    opacity: 0.8;
+    opacity: 0.82;
   }
 }
+</style>
 
-/* Leaflet Draw Custom Styles */
-:deep(.leaflet-draw-tooltip) {
-  background: rgba(51, 136, 255, 0.9);
-  border: none;
-  color: white;
+<style>
+/* 地图地块标签（全局，因为 Leaflet 在 DOM 根处渲染） */
+.farmland-map-label {
+  background: rgba(24, 160, 88, 0.88);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  transform: translateX(-50%);
+  display: inline-block;
+  pointer-events: none;
+}
+
+/* Leaflet Draw 工具提示 */
+.leaflet-draw-tooltip {
+  background: rgba(24, 160, 88, 0.9) !important;
+  border: none !important;
+  color: #fff !important;
   font-size: 12px;
   padding: 6px 10px;
   border-radius: 4px;
 }
 
-:deep(.leaflet-draw-tooltip-single) {
-  background: rgba(51, 136, 255, 0.9);
-}
-
-:deep(.leaflet-draw-tooltip-subtext) {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-:deep(.leaflet-editing-icon) {
-  border-radius: 50%;
-  border: 2px solid #3388ff;
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-:deep(.leaflet-marker-icon) {
-  border: 2px solid #3388ff !important;
-  background: white !important;
-}
-
-:deep(.leaflet-draw-guide-dash) {
-  stroke-dasharray: 5, 10;
-  stroke: #3388ff;
-  stroke-width: 2;
+.leaflet-editing-icon {
+  border-radius: 50% !important;
+  border: 2px solid #18a058 !important;
+  background: #fff !important;
 }
 </style>

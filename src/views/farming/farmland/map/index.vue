@@ -1,33 +1,56 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
-import { NCard, useMessage } from 'naive-ui';
-import { fetchCreateFarmland, fetchUpdateFarmland } from '@/service/api/farming/farmland';
+import { useMessage } from 'naive-ui';
+import {
+  fetchBatchDeleteFarmland,
+  fetchCreateFarmland,
+  fetchGetFarmlandList,
+  fetchUpdateFarmland
+} from '@/service/api/farming/farmland';
 import { fetchGetUserList } from '@/service/api/system';
 import MapContainer from './modules/MapContainer.vue';
 import FarmlandInfo from './modules/FarmlandInfo.vue';
+import FarmlandList from './modules/FarmlandList.vue';
 
 const message = useMessage();
-const route = useRoute();
 
-// 子组件引用
-const mapContainerRef = ref<InstanceType<typeof MapContainer> | null>(null);
-const infoRef = ref<InstanceType<typeof FarmlandInfo> | null>(null);
+// ---- 子组件引用 ----
+const mapRef = ref<InstanceType<typeof MapContainer> | null>(null);
 
-// 用户相关
-const userOptions = ref<{ label: string; value: string }[]>([]);
-const userLoading = ref(false);
+// ---- 地块列表 ----
+const farmlands = ref<Api.Farming.Farmland[]>([]);
+const listLoading = ref(false);
 
-// 地图状态
+async function loadFarmlands() {
+  listLoading.value = true;
+  try {
+    const { data, error } = await fetchGetFarmlandList({ current: 1, size: 1000 });
+    if (!error && data?.records) {
+      farmlands.value = data.records;
+    }
+  } finally {
+    listLoading.value = false;
+  }
+}
+
+// ---- 选中地块 ----
+const selectedFarmland = ref<Api.Farming.Farmland | null>(null);
+
+function handleSelect(farmland: Api.Farming.Farmland) {
+  if (mode.value !== 'view') return; // 编辑中不切换
+  selectedFarmland.value = farmland;
+}
+
+// ---- 面板模式 ----
+type PanelMode = 'view' | 'edit' | 'create';
+const mode = ref<PanelMode>('view');
+
+// ---- 绘制数据 ----
 const coordinates = ref<Array<[number, number]>>([]);
-const area = ref(0); // 平方米
+const area = ref(0);
 
-// 表单数据
-const farmlandForm = ref<Api.Farming.FarmlandOperateParams>(createDefaultModel());
-
-const isSaving = ref(false);
-
-function createDefaultModel(): Api.Farming.FarmlandOperateParams {
+// ---- 编辑/新建草稿 ----
+function emptyDraft(): Api.Farming.FarmlandOperateParams {
   return {
     id: null,
     userId: null,
@@ -39,16 +62,20 @@ function createDefaultModel(): Api.Farming.FarmlandOperateParams {
     polygonPath: null
   };
 }
+const draftModel = ref<Api.Farming.FarmlandOperateParams>(emptyDraft());
 
-// 获取用户列表
-async function getUserOptions() {
+// ---- 用户选项 ----
+const userOptions = ref<{ label: string; value: string }[]>([]);
+const userLoading = ref(false);
+
+async function loadUserOptions() {
   userLoading.value = true;
   try {
-    const { error, data } = await fetchGetUserList({ current: 1, size: 1000 });
-    if (!error && data.records) {
-      userOptions.value = data.records.map((user: any) => ({
-        label: user.realName,
-        value: user.userId
+    const { data, error } = await fetchGetUserList({ current: 1, size: 1000 });
+    if (!error && data?.records) {
+      userOptions.value = data.records.map((u: any) => ({
+        label: u.realName,
+        value: u.userId
       }));
     }
   } finally {
@@ -56,139 +83,157 @@ async function getUserOptions() {
   }
 }
 
-// 处理来自地图的数据更新
-const handleMapDataUpdate = (data: {
+// ---- 操作 ----
+const isSaving = ref(false);
+
+/** 点击"新建" */
+function handleAdd() {
+  selectedFarmland.value = null;
+  draftModel.value = emptyDraft();
+  coordinates.value = [];
+  area.value = 0;
+  mode.value = 'create';
+  mapRef.value?.clearDrawn();
+}
+
+/** 点击右侧"编辑" */
+function handleEdit() {
+  if (!selectedFarmland.value) return;
+  draftModel.value = { ...(selectedFarmland.value as any) };
+  // 回显已有坐标
+  if (selectedFarmland.value.polygonPath) {
+    try {
+      const coords = JSON.parse(selectedFarmland.value.polygonPath);
+      coordinates.value = coords;
+      setTimeout(() => {
+        mapRef.value?.setPolygon(coords);
+      }, 100);
+    } catch (_) {}
+  } else {
+    coordinates.value = [];
+    mapRef.value?.clearDrawn();
+  }
+  mode.value = 'edit';
+}
+
+/** 取消编辑/新建 */
+function handleCancel() {
+  mode.value = 'view';
+  mapRef.value?.clearDrawn();
+  coordinates.value = [];
+  area.value = 0;
+}
+
+/** 保存 */
+async function handleSave() {
+  if (mode.value === 'create' && coordinates.value.length < 3) {
+    message.warning('请先在地图上绘制至少3个顶点的田块边界');
+    return;
+  }
+  isSaving.value = true;
+  try {
+    draftModel.value.polygonPath = JSON.stringify(coordinates.value);
+    const isEdit = mode.value === 'edit';
+    const apiFn = isEdit ? fetchUpdateFarmland : fetchCreateFarmland;
+    const { error } = await apiFn(draftModel.value);
+    if (!error) {
+      message.success(isEdit ? '田块更新成功！' : '田块创建成功！');
+      await loadFarmlands();
+      mode.value = 'view';
+      mapRef.value?.clearDrawn();
+      coordinates.value = [];
+      area.value = 0;
+      // 重新选中刚保存的地块
+      if (draftModel.value.name) {
+        const found = farmlands.value.find(f => f.name === draftModel.value.name);
+        if (found) selectedFarmland.value = found;
+      }
+    }
+  } finally {
+    isSaving.value = false;
+  }
+}
+
+/** 删除 */
+async function handleDelete() {
+  if (!selectedFarmland.value?.id) return;
+  const { error } = await fetchBatchDeleteFarmland([selectedFarmland.value.id]);
+  if (!error) {
+    message.success('删除成功');
+    selectedFarmland.value = null;
+    await loadFarmlands();
+  }
+}
+
+/** 地图绘制数据更新 */
+function handleMapDataUpdate(data: {
   coordinates: Array<[number, number]>;
   area: number;
   areaSize: number;
   location: string;
-}) => {
+}) {
   coordinates.value = data.coordinates;
   area.value = data.area;
-  farmlandForm.value.areaSize = data.areaSize;
-  farmlandForm.value.polygonPath = JSON.stringify(data.coordinates);
+  draftModel.value.areaSize = data.areaSize;
+  draftModel.value.polygonPath = JSON.stringify(data.coordinates);
   if (data.location) {
-    farmlandForm.value.location = data.location;
+    draftModel.value.location = data.location;
   }
-};
-
-// 重置表单和地图
-const handleReset = () => {
-  farmlandForm.value = createDefaultModel();
-  coordinates.value = [];
-  area.value = 0;
-
-  // 清除地图上的绘制
-  mapContainerRef.value?.clearMap();
-
-  message.info('已重置表单');
-};
-
-// 保存田块数据
-const handleSave = async () => {
-  try {
-    // 地图数据校验
-    if (coordinates.value.length < 3) {
-      message.warning('至少需要3个顶点才能形成有效的田块');
-      return;
-    }
-
-    isSaving.value = true;
-
-    // 准备提交的数据 (可以直接使用 farmlandForm.value，因为它已经是正确的类型)
-    // 确保 polygonPath 是最新的 (虽然 handleMapDataUpdate 已经更新了，但再次确认也无妨，或者就在这里设置)
-    farmlandForm.value.polygonPath = JSON.stringify(coordinates.value);
-
-    console.log('即将提交的数据:', farmlandForm.value);
-
-    // 调用 API 保存数据
-    let result;
-    if (farmlandForm.value.id) {
-      result = await fetchUpdateFarmland(farmlandForm.value);
-    } else {
-      result = await fetchCreateFarmland(farmlandForm.value);
-    }
-
-    const { data, error } = result;
-
-    if (!error && data) {
-      message.success('田块保存成功！');
-      // 如果是编辑模式，不重置，或者根据需求决定。这里假设保存后为了便利可以保留或重置。
-      // 如果是从列表跳转过来的，可能希望保留状态？但通常保存意味着完成。
-      handleReset();
-    }
-  } catch (err: any) {
-    console.error('保存失败:', err);
-  } finally {
-    isSaving.value = false;
-  }
-};
+}
 
 onMounted(() => {
-  getUserOptions();
-
-  // 检查路由参数，如果有数据则回显
-  const queryData = route.query.data;
-  if (queryData && typeof queryData === 'string') {
-    try {
-      const parsedData = JSON.parse(queryData);
-      Object.assign(farmlandForm.value, parsedData);
-
-      // 回显多边形
-      if (parsedData.polygonPath) {
-        const coords = JSON.parse(parsedData.polygonPath);
-        coordinates.value = coords;
-        // 设置面积显示
-        if (parsedData.areaSize) {
-          // 这里的 area 是用于显示的 m2，近似倒推一下或者直接为 0 (因为 FarmlandInfo 主要显示 areaSize 亩)
-          area.value = parsedData.areaSize * 666.67;
-        }
-
-        // 延迟执行以确保地图初始化完成
-        setTimeout(() => {
-          mapContainerRef.value?.setPolygon(coords);
-        }, 500);
-      }
-    } catch (e) {
-      console.error('解析路由数据失败:', e);
-    }
-  }
+  loadFarmlands();
+  loadUserOptions();
 });
 </script>
 
 <template>
-  <div class="farmland-map-container">
-    <NCard title="田块地图管理" :bordered="false" class="h-full">
-      <div class="map-layout">
-        <!-- 地图容器 -->
-        <MapContainer ref="mapContainerRef" @update:data="handleMapDataUpdate" />
+  <div class="farmland-map-page">
+    <!-- 左侧：地块列表 -->
+    <FarmlandList
+      :farmlands="farmlands"
+      :loading="listLoading"
+      :selected-id="selectedFarmland?.id ?? null"
+      @select="handleSelect"
+      @add="handleAdd"
+    />
 
-        <!-- 右侧信息面板 -->
-        <FarmlandInfo
-          ref="infoRef"
-          v-model="farmlandForm"
-          :coordinates="coordinates"
-          :area="area"
-          :user-options="userOptions"
-          :user-loading="userLoading"
-          :loading="isSaving"
-          @submit="handleSave"
-          @reset="handleReset"
-        />
-      </div>
-    </NCard>
+    <!-- 中间：地图 -->
+    <MapContainer
+      ref="mapRef"
+      :farmlands="farmlands"
+      :selected-id="selectedFarmland?.id ?? null"
+      :draw-mode="mode === 'edit' || mode === 'create'"
+      @select="handleSelect"
+      @update:data="handleMapDataUpdate"
+    />
+
+    <!-- 右侧：详情 / 编辑 -->
+    <FarmlandInfo
+      :farmland="selectedFarmland"
+      :draft-model="draftModel"
+      :coordinates="coordinates"
+      :area="area"
+      :user-options="userOptions"
+      :user-loading="userLoading"
+      :loading="isSaving"
+      :mode="mode"
+      @update:draft-model="val => (draftModel = val)"
+      @edit="handleEdit"
+      @delete="handleDelete"
+      @submit="handleSave"
+      @cancel="handleCancel"
+    />
   </div>
 </template>
 
 <style scoped>
-.farmland-map-container {
-  height: 100%;
-  padding: 16px;
-}
-
-.map-layout {
+.farmland-map-page {
   display: flex;
-  gap: 16px;
-  height: calc(100vh - 180px);
+  gap: 12px;
+  height: calc(100vh - 120px);
+  padding: 16px;
+  box-sizing: border-box;
+  min-height: 500px;
 }
 </style>
