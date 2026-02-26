@@ -58,6 +58,16 @@ export const generatedRoutes: GeneratedRoute[] = [
           i18nKey: 'route.ai_chat',
           icon: 'mdi:chat-bubble-outline'
         }
+      },
+      {
+        name: 'ai_suggestion',
+        path: '/ai/suggestion',
+        component: 'view.ai_suggestion',
+        meta: {
+          title: 'ai_suggestion',
+          i18nKey: 'route.ai_suggestion',
+          icon: 'mdi:lightbulb-on-outline'
+        }
       }
     ]
   },

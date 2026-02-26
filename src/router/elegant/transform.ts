@@ -168,6 +168,7 @@ const routeMap: RouteMap = {
   "500": "/500",
   "ai": "/ai",
   "ai_chat": "/ai/chat",
+  "ai_suggestion": "/ai/suggestion",
   "env": "/env",
   "env_alert-log": "/env/alert-log",
   "env_alert-rule": "/env/alert-rule",

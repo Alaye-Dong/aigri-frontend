@@ -21,6 +21,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "iframe-page": () => import("@/views/_builtin/iframe-page/[url].vue"),
   login: () => import("@/views/_builtin/login/index.vue"),
   ai_chat: () => import("@/views/ai/chat/index.vue"),
+  ai_suggestion: () => import("@/views/ai/suggestion/index.vue"),
   "env_alert-log": () => import("@/views/env/alert-log/index.vue"),
   "env_alert-rule": () => import("@/views/env/alert-rule/index.vue"),
   env_device: () => import("@/views/env/device/index.vue"),

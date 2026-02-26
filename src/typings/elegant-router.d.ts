@@ -22,6 +22,7 @@ declare module "@elegant-router/types" {
     "500": "/500";
     "ai": "/ai";
     "ai_chat": "/ai/chat";
+    "ai_suggestion": "/ai/suggestion";
     "env": "/env";
     "env_alert-log": "/env/alert-log";
     "env_alert-rule": "/env/alert-rule";
@@ -101,6 +102,7 @@ declare module "@elegant-router/types" {
     | "iframe-page"
     | "login"
     | "ai_chat"
+    | "ai_suggestion"
     | "env_alert-log"
     | "env_alert-rule"
     | "env_device"

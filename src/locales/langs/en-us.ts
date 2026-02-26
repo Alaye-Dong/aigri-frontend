@@ -268,7 +268,8 @@ const local: App.I18n.Schema = {
     'env_alert-rule': 'Alert Rule Management',
     'env_alert-log': 'Alert Log',
     ai: 'AI',
-    ai_chat: 'AI Chat'
+    ai_chat: 'AI Chat',
+    ai_suggestion: 'AI Suggestion'
   },
   page: {
     login: {

@@ -264,7 +264,8 @@ const local: App.I18n.Schema = {
     'env_alert-rule': '告警规则',
     'env_alert-log': '告警日志',
     ai: '智能支持',
-    ai_chat: '智能对话'
+    ai_chat: '智能对话',
+    ai_suggestion: '智能建议'
   },
   page: {
     login: {
