@@ -3,7 +3,6 @@ import { computed, ref, watch } from 'vue';
 import { jsonClone } from '@sa/utils';
 import { useLoading } from '@sa/hooks';
 import { fetchGetSuggestionInfo, fetchAdoptSuggestion } from '@/service/api/ai';
-import { $t } from '@/locales';
 
 defineOptions({
   name: 'SuggestionDetailDrawer'
@@ -48,11 +47,10 @@ function createDefaultModel(): Model {
   return {
     id: 0,
     farmlandId: null,
-    farmlandName: null,
-    triggerReason: '',
+    urgencyLevel: '',
     suggestion: '',
-    aiModel: '',
     isAdopted: 0,
+    isPushed: 0,
     createTime: '',
     createBy: '',
     updateBy: '',
@@ -60,6 +58,13 @@ function createDefaultModel(): Model {
     status: null
   };
 }
+
+const urgencyNames: Record<string, string> = {
+  URGENT: '紧急',
+  HIGH: '高',
+  MEDIUM: '中',
+  LOW: '低'
+};
 
 async function getSuggestionInfo(id?: CommonType.IdType) {
   if (!id) return;
@@ -115,33 +120,31 @@ watch(visible, () => {
     <NDrawerContent :title="title" :native-scrollbar="false" closable>
       <NSpin :show="loading">
         <NForm :model="model" label-placement="left" :label-width="100">
-          <NFormItem label="农田名称" path="farmlandName">
-            <NInput v-model:value="model.farmlandName" placeholder="农田名称" readonly />
+          <NFormItem label="农田ID" path="farmlandId">
+            <NInput :value="model.farmlandId?.toString() || '-'" placeholder="农田ID" readonly />
           </NFormItem>
-          <NFormItem label="触发原因" path="triggerReason">
-            <NInput
-              v-model:value="model.triggerReason"
-              type="textarea"
-              placeholder="触发原因"
-              :autosize="{ minRows: 2, maxRows: 4 }"
-              readonly
-            />
+          <NFormItem label="紧急程度" path="urgencyLevel">
+            <NTag :type="model.urgencyLevel === 'URGENT' ? 'error' : model.urgencyLevel === 'HIGH' ? 'warning' : 'info'" size="small">
+              {{ urgencyNames[model.urgencyLevel] || model.urgencyLevel }}
+            </NTag>
           </NFormItem>
           <NFormItem label="建议内容" path="suggestion">
             <NInput
               v-model:value="model.suggestion"
               type="textarea"
               placeholder="建议内容"
-              :autosize="{ minRows: 4, maxRows: 8 }"
+              :autosize="{ minRows: 6, maxRows: 12 }"
               readonly
             />
-          </NFormItem>
-          <NFormItem label="AI模型" path="aiModel">
-            <NInput v-model:value="model.aiModel" placeholder="AI模型" readonly />
           </NFormItem>
           <NFormItem label="采纳状态" path="isAdopted">
             <NTag :type="model.isAdopted === 1 ? 'success' : 'default'" size="small">
               {{ model.isAdopted === 1 ? '已采纳' : '未采纳' }}
+            </NTag>
+          </NFormItem>
+          <NFormItem label="推送状态" path="isPushed">
+            <NTag :type="model.isPushed === 1 ? 'info' : 'default'" size="small">
+              {{ model.isPushed === 1 ? '已推送' : '未推送' }}
             </NTag>
           </NFormItem>
           <NFormItem label="创建时间" path="createTime">
@@ -158,5 +161,3 @@ watch(visible, () => {
     </NDrawerContent>
   </NDrawer>
 </template>
-
-<style scoped></style>

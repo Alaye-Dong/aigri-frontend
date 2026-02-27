@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, toRaw } from 'vue';
 import { jsonClone } from '@sa/utils';
+import { fetchGetFarmlandList } from '@/service/api/farming';
 import { useNaiveForm } from '@/hooks/common/form';
 import { $t } from '@/locales';
-import { fetchGetFarmlandList } from '@/service/api/farming';
 
 defineOptions({
   name: 'SuggestionSearch'
@@ -36,10 +36,12 @@ async function loadFarmlands() {
   }
 }
 
-/** 采纳状态选项 */
-const adoptStatusOptions = [
-  { label: '未采纳', value: 0 },
-  { label: '已采纳', value: 1 }
+/** 紧急程度选项 */
+const urgencyLevelOptions = [
+  { label: '紧急', value: 'URGENT' },
+  { label: '高', value: 'HIGH' },
+  { label: '中', value: 'MEDIUM' },
+  { label: '低', value: 'LOW' }
 ];
 
 function resetModel() {
@@ -67,7 +69,7 @@ loadFarmlands();
       <NCollapseItem :title="$t('common.search')" name="suggestion-search">
         <NForm :model="model" label-placement="left" :label-width="100">
           <NGrid responsive="screen" item-responsive>
-            <NFormItemGi span="24 s:12 m:6" label="农田名称" path="farmlandId" class="pr-24px">
+            <NFormItemGi span="24 s:12 m:6" label="农田" path="farmlandId" class="pr-24px">
               <NSelect
                 v-model:value="model.farmlandId"
                 placeholder="选择农田...默认为全部"
@@ -76,11 +78,11 @@ loadFarmlands();
                 filterable
               />
             </NFormItemGi>
-            <NFormItemGi span="24 s:12 m:6" label="采纳状态" path="isAdopted" class="pr-24px">
+            <NFormItemGi span="24 s:12 m:6" label="紧急程度" path="urgencyLevel" class="pr-24px">
               <NSelect
-                v-model:value="model.isAdopted"
-                placeholder="采纳状态...默认为全部"
-                :options="adoptStatusOptions"
+                v-model:value="model.urgencyLevel"
+                placeholder="紧急程度...默认为全部"
+                :options="urgencyLevelOptions"
                 clearable
               />
             </NFormItemGi>

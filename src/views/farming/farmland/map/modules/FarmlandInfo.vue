@@ -94,9 +94,15 @@ defineExpose({ restoreValidation });
     <!-- ===== 查看模式 ===== -->
     <template v-else-if="mode === 'view' && farmland">
       <!-- 标题 -->
-      <div class="panel-header flex items-center justify-between gap-8px px-14px py-14px border-b border-gray-100 flex-shrink-0 dark:border-dark-80">
+      <div
+        class="panel-header dark:border-dark-80 flex flex-shrink-0 items-center justify-between gap-8px border-b border-gray-100 px-14px py-14px"
+      >
         <div class="header-left min-w-0 flex flex-1 items-center">
-          <span class="panel-title overflow-hidden text-ellipsis whitespace-nowrap text-15px text-gray-900 font-600 dark:text-gray-100">{{ farmland.name }}</span>
+          <span
+            class="panel-title overflow-hidden text-ellipsis whitespace-nowrap text-15px text-gray-900 font-600 dark:text-gray-100"
+          >
+            {{ farmland.name }}
+          </span>
           <NTag type="success" size="small" round class="ml-8px">
             {{ farmland.areaSize ? `${farmland.areaSize} 亩` : '未知面积' }}
           </NTag>
@@ -134,13 +140,19 @@ defineExpose({ restoreValidation });
 
     <!-- ===== 编辑 / 新建模式 ===== -->
     <template v-else>
-      <div class="panel-header flex items-center justify-between gap-8px px-14px py-14px border-b border-gray-100 flex-shrink-0 dark:border-dark-80">
-        <span class="panel-title text-15px font-600 text-gray-900 dark:text-gray-100">{{ mode === 'create' ? '新建田块' : '编辑田块' }}</span>
+      <div
+        class="panel-header dark:border-dark-80 flex flex-shrink-0 items-center justify-between gap-8px border-b border-gray-100 px-14px py-14px"
+      >
+        <span class="panel-title text-15px text-gray-900 font-600 dark:text-gray-100">
+          {{ mode === 'create' ? '新建田块' : '编辑田块' }}
+        </span>
       </div>
 
       <!-- 绘制提示 -->
-      <div class="draw-hint flex items-center gap-6px px-14px py-8px bg-green-50 text-green-600 text-12px flex-shrink-0">
-        <SvgIcon icon="material-symbols:draw-outline-rounded" class="hint-icon text-15px flex-shrink-0" />
+      <div
+        class="draw-hint flex flex-shrink-0 items-center gap-6px bg-green-50 px-14px py-8px text-12px text-green-600"
+      >
+        <SvgIcon icon="material-symbols:draw-outline-rounded" class="hint-icon flex-shrink-0 text-15px" />
         <span>{{ mode === 'create' ? '在右侧地图上绘制田块多边形' : '可在地图上重新绘制边界' }}</span>
         <span v-if="coordinates.length > 0" class="hint-count font-600">（已有 {{ coordinates.length }} 个顶点）</span>
       </div>
@@ -179,7 +191,7 @@ defineExpose({ restoreValidation });
           </NFormItem>
 
           <NFormItem label="面积(亩)" path="areaSize">
-            <div class="area-block flex flex-col gap-4px w-full">
+            <div class="area-block w-full flex flex-col gap-4px">
               <NInputNumber
                 v-model:value="localDraft.areaSize"
                 placeholder="面积"
@@ -208,7 +220,7 @@ defineExpose({ restoreValidation });
       </div>
 
       <!-- 按钮 -->
-      <div class="action-bar px-14px py-12px flex gap-8px border-t border-gray-100 flex-shrink-0 dark:border-dark-80">
+      <div class="action-bar dark:border-dark-80 flex flex-shrink-0 gap-8px border-t border-gray-100 px-14px py-12px">
         <NButton
           type="primary"
           :loading="loading"
