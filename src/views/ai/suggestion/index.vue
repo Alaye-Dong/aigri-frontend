@@ -289,9 +289,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-500px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
-    <!-- 建议生成区域 -->
-    <NCard title="生成智能建议" :bordered="false" size="small" class="card-wrapper">
+  <div class="min-h-500px flex flex-col gap-16px">
+    <!-- 上方生成区域 -->
+    <NCard title="生成智能建议" :bordered="false" size="small" class="flex-shrink-0">
       <NSpin :show="generateLoading">
         <NSpace vertical size="large">
           <NAlert type="info" title="功能说明">
@@ -336,7 +336,7 @@ onMounted(() => {
     </NCard>
 
     <!-- 生成的建议结果 -->
-    <NCard v-if="suggestionResult" title="AI智能建议" :bordered="false" size="small" class="card-wrapper">
+    <NCard v-if="suggestionResult" title="AI智能建议" :bordered="false" size="small" class="flex-shrink-0">
       <template #header-extra>
         <NSpace align="center">
           <NTag :type="urgencyColors[suggestionResult.urgencyLevel] || 'info'" size="small">
@@ -387,7 +387,7 @@ onMounted(() => {
     </NCard>
 
     <!-- 紧急建议列表 -->
-    <NCard v-if="urgentSuggestions.length > 0" title="紧急建议" :bordered="false" size="small" class="card-wrapper">
+    <NCard v-if="urgentSuggestions.length > 0" title="紧急建议" :bordered="false" size="small" class="flex-shrink-0 max-h-300px overflow-y-auto">
       <NSpace vertical size="large">
         <NAlert type="warning" title="紧急提醒">以下建议需要您尽快处理，以避免可能的损失。</NAlert>
 
@@ -434,9 +434,9 @@ onMounted(() => {
       </NSpace>
     </NCard>
 
-    <!-- 建议记录列表 -->
+    <!-- 下方表格区域 -->
     <SuggestionSearch v-model:model="searchParams" @reset="handleResetSearch" @search="getDataByPage" />
-    <NCard title="建议记录" :bordered="false" size="small" class="card-wrapper sm:flex-1-hidden">
+    <NCard title="建议记录" :bordered="false" size="small" class="card-wrapper">
       <template #header-extra>
         <TableHeaderOperation
           v-model:columns="columnChecks"
@@ -456,7 +456,6 @@ onMounted(() => {
         remote
         :row-key="row => row.id"
         :pagination="mobilePagination"
-        class="sm:h-full"
       />
       <SuggestionDetailDrawer
         v-model:visible="drawerVisible"
@@ -469,8 +468,4 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped>
-.card-wrapper {
-  transition: all 0.3s ease;
-}
-</style>
+<style scoped></style>
