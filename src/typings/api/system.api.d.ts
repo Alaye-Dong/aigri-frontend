@@ -20,5 +20,25 @@ declare namespace Api {
 
     /** user operate params */
     type UserOperateParams = CommonType.RecordNullable<User>;
+
+    /** user profile (without password) */
+    type Profile = {
+      userId: CommonType.IdType;
+      userName: string;
+      realName: string;
+      phone: string;
+      role: string;
+      status: Common.EnableStatus;
+    };
+
+    /** profile update params */
+    type ProfileUpdateParams = Pick<Profile, 'userId' | 'realName' | 'phone'>;
+
+    /** password change params */
+    type PasswordChangeParams = {
+      oldPassword: string;
+      newPassword: string;
+      confirmPassword: string;
+    };
   }
 }

@@ -37,6 +37,7 @@ declare module "@elegant-router/types" {
     "home": "/home";
     "iframe-page": "/iframe-page/:url";
     "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?";
+    "profile": "/profile";
     "system": "/system";
     "system_user": "/system/user";
   };
@@ -79,6 +80,7 @@ declare module "@elegant-router/types" {
     | "home"
     | "iframe-page"
     | "login"
+    | "profile"
     | "system"
   >;
 
@@ -101,6 +103,7 @@ declare module "@elegant-router/types" {
     | "500"
     | "iframe-page"
     | "login"
+    | "profile"
     | "ai_chat"
     | "ai_suggestion"
     | "env_alert-log"

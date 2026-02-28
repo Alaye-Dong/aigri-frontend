@@ -380,10 +380,10 @@ declare namespace App {
           no: string;
         };
         second: string;
-        selected: string;
-        anyRecords: string;
         clear: string;
         noSelectRecord: string;
+        pleaseInput: string;
+        required: string;
       };
       request: {
         logout: string;
@@ -585,8 +585,19 @@ declare namespace App {
             phone: string;
             role: string;
             status: string;
+            phoneFormat: string;
+            passwordMin: string;
+            passwordMismatch: string;
+            oldPassword: string;
+            newPassword: string;
+            confirmPassword: string;
+            passwordChangeSuccess: string;
           };
-        };
+          profile: {
+            title: string;
+            basicInfo: string;
+            changePassword: string;
+          };
       };
       form: {
         required: string;

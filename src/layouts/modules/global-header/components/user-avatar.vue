@@ -18,7 +18,7 @@ function loginOrRegister() {
   toLogin();
 }
 
-type DropdownKey = 'logout';
+type DropdownKey = 'profile' | 'logout';
 
 type DropdownOption =
   | {
@@ -33,6 +33,15 @@ type DropdownOption =
 
 const options = computed(() => {
   const opts: DropdownOption[] = [
+    {
+      label: $t('route.profile'),
+      key: 'profile',
+      icon: SvgIconVNode({ icon: 'mdi:account-cog', fontSize: 18 })
+    },
+    {
+      type: 'divider',
+      key: 'divider'
+    },
     {
       label: $t('common.logout'),
       key: 'logout',

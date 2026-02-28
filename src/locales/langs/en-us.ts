@@ -63,6 +63,8 @@ const local: App.I18n.Schema = {
     saveSuccess: 'Save Success',
     updateSuccess: 'Update Success',
     noChange: 'No actions were taken',
+    pleaseInput: 'Please input',
+    required: 'Required',
     userCenter: 'User Center',
     yesOrNo: {
       yes: 'Yes',
@@ -269,7 +271,8 @@ const local: App.I18n.Schema = {
     'env_alert-log': 'Alert Log',
     ai: 'AI',
     ai_chat: 'AI Chat',
-    ai_suggestion: 'AI Suggestion'
+    ai_suggestion: 'AI Suggestion',
+    profile: 'Profile'
   },
   page: {
     login: {
@@ -353,7 +356,19 @@ const local: App.I18n.Schema = {
         realName: 'Real Name',
         phone: 'Phone',
         role: 'Role',
-        status: 'Status'
+        status: 'Status',
+        phoneFormat: 'Invalid phone format',
+        passwordMin: 'Password must be at least 6 characters',
+        passwordMismatch: 'Passwords do not match',
+        oldPassword: 'Old Password',
+        newPassword: 'New Password',
+        confirmPassword: 'Confirm Password',
+        passwordChangeSuccess: 'Password changed successfully'
+      },
+      profile: {
+        title: 'Profile',
+        basicInfo: 'Basic Info',
+        changePassword: 'Change Password'
       }
     }
   },

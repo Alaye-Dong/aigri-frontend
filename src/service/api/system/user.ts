@@ -51,3 +51,29 @@ export function fetchGetUserInfo(userId?: CommonType.IdType) {
     method: 'get'
   });
 }
+
+/** 获取当前用户个人信息 */
+export function fetchGetProfile() {
+  return request<Api.System.Profile>({
+    url: '/system/profile',
+    method: 'get'
+  });
+}
+
+/** 修改个人信息 */
+export function fetchUpdateProfile(data: Api.System.ProfileUpdateParams) {
+  return request<boolean>({
+    url: '/system/profile',
+    method: 'put',
+    data
+  });
+}
+
+/** 修改密码 */
+export function fetchChangePassword(data: Api.System.PasswordChangeParams) {
+  return request<boolean>({
+    url: '/system/profile/password',
+    method: 'put',
+    data
+  });
+}

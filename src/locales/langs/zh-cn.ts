@@ -63,6 +63,8 @@ const local: App.I18n.Schema = {
     saveSuccess: '保存成功',
     updateSuccess: '更新成功',
     noChange: '没有进行任何操作',
+    pleaseInput: '请输入',
+    required: '必填项',
     userCenter: '个人中心',
     yesOrNo: {
       yes: '是',
@@ -265,7 +267,8 @@ const local: App.I18n.Schema = {
     'env_alert-log': '告警日志',
     ai: '智能支持',
     ai_chat: '智能对话',
-    ai_suggestion: '智能建议'
+    ai_suggestion: '智能建议',
+    profile: '个人中心'
   },
   page: {
     login: {
@@ -349,7 +352,19 @@ const local: App.I18n.Schema = {
         realName: '用户姓名',
         phone: '电话',
         role: '角色',
-        status: '状态'
+        status: '状态',
+        phoneFormat: '手机号格式不正确',
+        passwordMin: '密码长度至少6位',
+        passwordMismatch: '两次输入的密码不一致',
+        oldPassword: '旧密码',
+        newPassword: '新密码',
+        confirmPassword: '确认密码',
+        passwordChangeSuccess: '密码修改成功'
+      },
+      profile: {
+        title: '个人中心',
+        basicInfo: '基本信息',
+        changePassword: '修改密码'
       }
     }
   },

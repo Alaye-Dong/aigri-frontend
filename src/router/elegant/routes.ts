@@ -224,6 +224,16 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
+    name: 'profile',
+    path: '/profile',
+    component: 'layout.base$view.profile',
+    meta: {
+      title: 'profile',
+      i18nKey: 'route.profile',
+      hideInMenu: true
+    }
+  },
+  {
     name: 'system',
     path: '/system',
     component: 'layout.base',
