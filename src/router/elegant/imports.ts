@@ -30,8 +30,6 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   farming_crop: () => import("@/views/farming/crop/index.vue"),
   "farming_farming-log": () => import("@/views/farming/farming-log/index.vue"),
   farming_farmland: () => import("@/views/farming/farmland/index.vue"),
-  farming_farmland_list: () => import("@/views/farming/farmland/list/index.vue"),
-  farming_farmland_map: () => import("@/views/farming/farmland/map/index.vue"),
   home: () => import("@/views/home/index.vue"),
   system_user: () => import("@/views/system/user/index.vue"),
 };

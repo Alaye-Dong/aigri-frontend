@@ -5,8 +5,12 @@ import { fetchBatchDeleteFarmland, fetchGetFarmlandList } from '@/service/api/fa
 import { defaultTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
 import { $t } from '@/locales';
 import ButtonIcon from '@/components/custom/button-icon.vue';
-import FarmlandOperateDrawer from './modules/farmland-operate-drawer.vue';
-import FarmlandSearch from './modules/farmland-search.vue';
+import FarmlandOperateDrawer from './FarmlandOperateDrawer.vue';
+import FarmlandSearch from './FarmlandSearch.vue';
+
+defineOptions({
+  name: 'FarmlandListTab'
+});
 
 const searchParams = ref<Api.Farming.FarmlandSearchParams>({
   current: 1,
@@ -132,14 +136,12 @@ const { drawerVisible, operateType, editingData, handleAdd, handleEdit, checkedR
   useTableOperate(data, 'id', getData);
 
 async function handleBatchDelete() {
-  // request
   const { error } = await fetchBatchDeleteFarmland(checkedRowKeys.value);
   if (error) return;
   onBatchDeleted();
 }
 
 async function handleDelete(id: CommonType.IdType) {
-  // request
   const { error } = await fetchBatchDeleteFarmland([id]);
   if (error) return;
   onDeleted();
@@ -158,38 +160,36 @@ function handleResetSearch() {
 </script>
 
 <template>
-  <div class="min-h-500px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
+  <div class="h-full flex-col-stretch gap-12px">
     <FarmlandSearch v-model:model="searchParams" @reset="handleResetSearch" @search="getDataByPage" />
-    <NCard title="地块列表" :bordered="false" size="small" class="card-wrapper sm:flex-1-hidden">
-      <template #header-extra>
-        <TableHeaderOperation
-          v-model:columns="columnChecks"
-          :disabled-delete="checkedRowKeys.length === 0"
-          :loading="loading"
-          @add="handleAdd"
-          @delete="handleBatchDelete"
-          @refresh="getData"
-        />
-      </template>
-      <NDataTable
-        v-model:checked-row-keys="checkedRowKeys"
-        :columns="columns"
-        :data="data"
-        size="small"
-        :scroll-x="962"
+    <div class="mb-8px flex justify-end">
+      <TableHeaderOperation
+        v-model:columns="columnChecks"
+        :disabled-delete="checkedRowKeys.length === 0"
         :loading="loading"
-        remote
-        :row-key="row => row.id"
-        :pagination="mobilePagination"
-        class="sm:h-full"
+        @add="handleAdd"
+        @delete="handleBatchDelete"
+        @refresh="getData"
       />
-      <FarmlandOperateDrawer
-        v-model:visible="drawerVisible"
-        :operate-type="operateType"
-        :row-data="editingData"
-        @submitted="getDataByPage"
-      />
-    </NCard>
+    </div>
+    <NDataTable
+      v-model:checked-row-keys="checkedRowKeys"
+      :columns="columns"
+      :data="data"
+      size="small"
+      :scroll-x="962"
+      :loading="loading"
+      remote
+      :row-key="row => row.id"
+      :pagination="mobilePagination"
+      class="flex-1-hidden"
+    />
+    <FarmlandOperateDrawer
+      v-model:visible="drawerVisible"
+      :operate-type="operateType"
+      :row-data="editingData"
+      @submitted="getDataByPage"
+    />
   </div>
 </template>
 

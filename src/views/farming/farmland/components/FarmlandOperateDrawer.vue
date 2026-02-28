@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
 import { jsonClone } from '@sa/utils';
 import { useLoading } from '@sa/hooks';
 import { fetchCreateFarmland, fetchGetFarmlandInfo, fetchUpdateFarmland } from '@/service/api/farming';
 import { fetchGetUserList } from '@/service/api/system';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { $t } from '@/locales';
-
 defineOptions({
   name: 'FarmlandOperateDrawer'
 });
@@ -145,25 +143,6 @@ const areaSizeNumber = computed<number | null>({
   }
 });
 
-const router = useRouter();
-
-function handleToMap() {
-  const queryData = { ...model.value };
-  // 移除空值
-  (Object.keys(queryData) as Array<keyof Model>).forEach(key => {
-    if (queryData[key] === null || queryData[key] === undefined) {
-      delete queryData[key];
-    }
-  });
-
-  router.push({
-    name: 'farming_farmland_map',
-    query: {
-      data: JSON.stringify(queryData)
-    }
-  });
-}
-
 async function handleSubmit() {
   try {
     await validate();
@@ -261,10 +240,7 @@ onMounted(() => {
             />
           </NFormItem>
           <NFormItem label="多边形路径" path="polygonPath">
-            <NInputGroup>
-              <NInput v-model:value="model.polygonPath" placeholder="请在地图上绘制" readonly />
-              <NButton type="primary" @click="handleToMap">去绘制</NButton>
-            </NInputGroup>
+            <NInput v-model:value="model.polygonPath" placeholder="请切换到地图视图绘制" readonly />
           </NFormItem>
         </NForm>
       </NSpin>

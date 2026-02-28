@@ -262,8 +262,7 @@ const local: App.I18n.Schema = {
     farming_crop: 'Crop Management',
     'farming_farming-log': 'Farming Log Management',
     farming_farmland: 'Farmland Management',
-    farming_farmland_list: 'Farmland List',
-    farming_farmland_map: 'Farmland Map',
+
     env: 'Env Monitoring',
     env_device: 'Device Management',
     'env_env-data': 'Env Data',

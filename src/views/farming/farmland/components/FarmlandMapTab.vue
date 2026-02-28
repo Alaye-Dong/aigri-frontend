@@ -8,9 +8,13 @@ import {
   fetchUpdateFarmland
 } from '@/service/api/farming/farmland';
 import { fetchGetUserList } from '@/service/api/system';
-import MapContainer from './modules/MapContainer.vue';
-import FarmlandInfo from './modules/FarmlandInfo.vue';
-import FarmlandList from './modules/FarmlandList.vue';
+import MapContainer from './MapContainer.vue';
+import FarmlandInfo from './FarmlandInfo.vue';
+import FarmlandList from './FarmlandList.vue';
+
+defineOptions({
+  name: 'FarmlandMapTab'
+});
 
 const message = useMessage();
 
@@ -188,7 +192,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="farmland-map-page box-border h-[calc(100vh-120px)] min-h-500px flex gap-12px p-16px">
+  <div class="farmland-map-page box-border h-[calc(100vh-220px)] min-h-500px flex gap-12px">
     <!-- 左侧：地块列表 -->
     <FarmlandList
       :farmlands="farmlands"

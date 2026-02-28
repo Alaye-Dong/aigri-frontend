@@ -178,8 +178,6 @@ const routeMap: RouteMap = {
   "farming_crop": "/farming/crop",
   "farming_farming-log": "/farming/farming-log",
   "farming_farmland": "/farming/farmland",
-  "farming_farmland_list": "/farming/farmland/list",
-  "farming_farmland_map": "/farming/farmland/map",
   "home": "/home",
   "iframe-page": "/iframe-page/:url",
   "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?",
