@@ -1,4 +1,4 @@
-<script setup lang="tsx">
+<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import {
   NAlert,
@@ -7,6 +7,8 @@ import {
   NDescriptions,
   NDescriptionsItem,
   NDivider,
+  NEmpty,
+  NPagination,
   NProgress,
   NSelect,
   NSpace,
@@ -20,11 +22,9 @@ import {
   fetchGetSuggestionPage
 } from '@/service/api/ai';
 import { fetchGetFarmlandList } from '@/service/api/farming';
-import { defaultTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
-import { $t } from '@/locales';
-import ButtonIcon from '@/components/custom/button-icon.vue';
 import SuggestionDetailDrawer from './modules/suggestion-detail-drawer.vue';
 import SuggestionSearch from './modules/suggestion-search.vue';
+import SuggestionCard from './modules/suggestion-card.vue';
 
 // ========== 常量定义 ==========
 const urgencyColors: Record<string, 'error' | 'warning' | 'info' | 'success'> = {
@@ -48,7 +48,7 @@ const suggestionTypeNames: Record<string, string> = {
   GENERAL: '通用建议'
 };
 
-// ========== 建议记录相关 (先定义，因为后面的函数会用到) ==========
+// ========== 建议记录相关 ==========
 const searchParams = ref<Api.Ai.SuggestionSearchParams>({
   current: 1,
   size: 10,
@@ -56,162 +56,84 @@ const searchParams = ref<Api.Ai.SuggestionSearchParams>({
   urgencyLevel: null
 });
 
-const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagination } = useNaivePaginatedTable({
-  api: () => fetchGetSuggestionPage(searchParams.value),
-  transform: response => defaultTransform(response),
-  onPaginationParamsChange: params => {
-    searchParams.value.current = params.page;
-    searchParams.value.size = params.pageSize;
-  },
-  columns: () => [
-    {
-      type: 'selection',
-      align: 'center',
-      width: 48
-    },
-    {
-      key: 'index',
-      title: $t('common.index'),
-      align: 'center',
-      width: 64,
-      render: (_, index) => index + 1
-    },
-    {
-      key: 'farmlandId',
-      title: '农田ID',
-      align: 'center',
-      minWidth: 100
-    },
-    {
-      key: 'urgencyLevel',
-      title: '紧急程度',
-      align: 'center',
-      minWidth: 100,
-      render(row) {
-        const level = row.urgencyLevel;
-        const colorType = urgencyColors[level] || 'info';
-        const name = urgencyNames[level] || level;
-        return (
-          <NTag type={colorType} size="small">
-            {name}
-          </NTag>
-        );
-      }
-    },
-    {
-      key: 'suggestion',
-      title: '建议内容',
-      align: 'left',
-      minWidth: 300,
-      ellipsis: {
-        tooltip: true
-      }
-    },
-    {
-      key: 'isAdopted',
-      title: '采纳状态',
-      align: 'center',
-      minWidth: 100,
-      render(row) {
-        const isAdopted = row.isAdopted === 1;
-        const statusType = isAdopted ? 'success' : 'default';
-        const statusText = isAdopted ? '已采纳' : '未采纳';
-        return (
-          <NTag type={statusType} size="small">
-            {statusText}
-          </NTag>
-        );
-      }
-    },
-    {
-      key: 'isPushed',
-      title: '推送状态',
-      align: 'center',
-      minWidth: 100,
-      render(row) {
-        const isPushed = row.isPushed === 1;
-        const statusType = isPushed ? 'info' : 'default';
-        const statusText = isPushed ? '已推送' : '未推送';
-        return (
-          <NTag type={statusType} size="small">
-            {statusText}
-          </NTag>
-        );
-      }
-    },
-    {
-      key: 'createTime',
-      title: '创建时间',
-      align: 'center',
-      minWidth: 150
-    },
-    {
-      key: 'operate',
-      title: $t('common.operate'),
-      align: 'center',
-      width: 160,
-      render: row => {
-        const viewBtn = () => {
-          return (
-            <ButtonIcon
-              text
-              type="primary"
-              icon="material-symbols:visibility-outline"
-              tooltipContent="查看详情"
-              onClick={() => viewDetail(row.id)}
-            />
-          );
-        };
+// 数据状态
+const data = ref<Api.Ai.Suggestion[]>([]);
+const loading = ref(false);
+const total = ref(0);
 
-        const adoptBtn = () => {
-          if (row.isAdopted === 1) return null;
-          return (
-            <ButtonIcon
-              text
-              type="success"
-              icon="material-symbols:check-circle-outline"
-              tooltipContent="采纳建议"
-              onClick={() => handleAdopt(row.id)}
-            />
-          );
-        };
+// 分页配置
+const pagination = computed(() => ({
+  page: searchParams.value.current,
+  pageSize: searchParams.value.size,
+  itemCount: total.value,
+  showSizePicker: true,
+  pageSizes: [10, 20, 50],
+  prefix: () => `共 ${total.value} 条`
+}));
 
-        const buttons = [];
-        buttons.push(viewBtn());
-        if (row.isAdopted !== 1) {
-          buttons.push(adoptBtn());
-        }
+// 农田名称映射
+const farmlandMap = ref<Map<number, string>>(new Map());
 
-        return (
-          <div class="flex-center gap-8px">
-            {buttons.map((btn, index) => (
-              <>
-                {index !== 0 && <NDivider vertical />}
-                {btn}
-              </>
-            ))}
-          </div>
-        );
-      }
-    }
-  ]
-});
+// 详情抽屉状态
+const drawerVisible = ref(false);
+const operateType = ref<NaiveUI.TableOperateType>('edit');
+const editingData = ref<Api.Ai.Suggestion | null>(null);
 
-const { drawerVisible, operateType, editingData, handleEdit, checkedRowKeys } = useTableOperate(data, 'id', getData);
+// 获取数据
+async function getData() {
+  loading.value = true;
+  const { error, data: result } = await fetchGetSuggestionPage(searchParams.value);
+  loading.value = false;
 
+  if (!error && result) {
+    data.value = result.records || [];
+    total.value = result.total || 0;
+  }
+}
+
+function getDataByPage() {
+  searchParams.value.current = 1;
+  getData();
+}
+
+function handleResetSearch() {
+  getDataByPage();
+}
+
+// 分页变化
+function handlePageChange(page: number) {
+  searchParams.value.current = page;
+  getData();
+}
+
+function handlePageSizeChange(pageSize: number) {
+  searchParams.value.size = pageSize;
+  searchParams.value.current = 1;
+  getData();
+}
+
+// 获取农田名称
+function getFarmlandName(farmlandId: number | null): string | undefined {
+  if (!farmlandId) return undefined;
+  return farmlandMap.value.get(farmlandId);
+}
+
+// 查看详情
+function viewDetail(id: CommonType.IdType) {
+  const item = data.value.find(d => d.id === id);
+  if (item) {
+    editingData.value = item;
+    operateType.value = 'edit';
+    drawerVisible.value = true;
+  }
+}
+
+// 采纳建议
 async function handleAdopt(id: CommonType.IdType) {
   const { error } = await fetchAdoptSuggestion(id);
   if (error) return;
   window.$message?.success('采纳成功');
   getData();
-}
-
-function viewDetail(id: CommonType.IdType) {
-  handleEdit(id);
-}
-
-function handleResetSearch() {
-  getDataByPage();
 }
 
 // ========== 建议生成相关 ==========
@@ -233,6 +155,8 @@ async function loadFarmlands() {
       label: item.name,
       value: item.id
     }));
+    // 构建农田名称映射
+    farmlandMap.value = new Map(farmlandData.records.map(item => [item.id, item.name]));
   }
 }
 
@@ -284,6 +208,7 @@ onMounted(() => {
   generateLoading.value = true;
   loadFarmlands().finally(() => {
     generateLoading.value = false;
+    getData();
   });
 });
 </script>
@@ -387,7 +312,13 @@ onMounted(() => {
     </NCard>
 
     <!-- 紧急建议列表 -->
-    <NCard v-if="urgentSuggestions.length > 0" title="紧急建议" :bordered="false" size="small" class="flex-shrink-0 max-h-300px overflow-y-auto">
+    <NCard
+      v-if="urgentSuggestions.length > 0"
+      title="紧急建议"
+      :bordered="false"
+      size="small"
+      class="max-h-300px flex-shrink-0 overflow-y-auto"
+    >
       <NSpace vertical size="large">
         <NAlert type="warning" title="紧急提醒">以下建议需要您尽快处理，以避免可能的损失。</NAlert>
 
@@ -434,35 +365,53 @@ onMounted(() => {
       </NSpace>
     </NCard>
 
-    <!-- 下方表格区域 -->
+    <!-- 下方卡片列表区域 -->
     <SuggestionSearch v-model:model="searchParams" @reset="handleResetSearch" @search="getDataByPage" />
-    <NCard title="建议记录" :bordered="false" size="small" class="card-wrapper">
+    <NCard title="建议记录" :bordered="false" size="small" class="flex-1 card-wrapper">
       <template #header-extra>
-        <TableHeaderOperation
-          v-model:columns="columnChecks"
-          :disabled-delete="checkedRowKeys.length === 0"
-          :loading="loading"
-          :disabled-add="true"
-          @refresh="getData"
-        />
+        <NButton quaternary size="small" :loading="loading" @click="getData">
+          <template #icon>
+            <icon-mdi-refresh class="text-16px" />
+          </template>
+          刷新
+        </NButton>
       </template>
-      <NDataTable
-        v-model:checked-row-keys="checkedRowKeys"
-        :columns="columns"
-        :data="data"
-        size="small"
-        :scroll-x="1100"
-        :loading="loading"
-        remote
-        :row-key="row => row.id"
-        :pagination="mobilePagination"
-      />
+
+      <NSpin :show="loading">
+        <!-- 卡片列表 -->
+        <div v-if="data.length > 0" class="flex flex-col gap-16px">
+          <div class="grid grid-cols-1 gap-16px lg:grid-cols-3 md:grid-cols-2">
+            <SuggestionCard
+              v-for="item in data"
+              :key="item.id"
+              :suggestion="item"
+              :farmland-name="getFarmlandName(item.farmlandId)"
+              @view="viewDetail"
+              @adopt="handleAdopt"
+            />
+          </div>
+
+          <!-- 分页 -->
+          <div class="mt-16px flex justify-center">
+            <NPagination v-bind="pagination" @update:page="handlePageChange" @update:page-size="handlePageSizeChange" />
+          </div>
+        </div>
+
+        <!-- 空状态 -->
+        <NEmpty v-else description="暂无建议记录" class="py-48px">
+          <template #extra>
+            <NButton size="small" @click="getData">刷新数据</NButton>
+          </template>
+        </NEmpty>
+      </NSpin>
+
+      <!-- 详情抽屉 -->
       <SuggestionDetailDrawer
         v-model:visible="drawerVisible"
         :operate-type="operateType"
         :row-data="editingData"
         :row-id="editingData?.id"
-        @submitted="getDataByPage"
+        @submitted="getData"
       />
     </NCard>
   </div>
