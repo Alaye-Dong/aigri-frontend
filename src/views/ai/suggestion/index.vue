@@ -63,8 +63,8 @@ const total = ref(0);
 
 // 分页配置
 const pagination = computed(() => ({
-  page: searchParams.value.current,
-  pageSize: searchParams.value.size,
+  page: searchParams.value.current ?? 1,
+  pageSize: searchParams.value.size ?? 10,
   itemCount: total.value,
   showSizePicker: true,
   pageSizes: [10, 20, 50],
@@ -113,9 +113,12 @@ function handlePageSizeChange(pageSize: number) {
 }
 
 // 获取农田名称
-function getFarmlandName(farmlandId: number | null): string | undefined {
+function getFarmlandName(farmlandId: CommonType.IdType | null): string | undefined {
   if (!farmlandId) return undefined;
-  return farmlandMap.value.get(farmlandId);
+  // farmlandId 可能是 string 或 number，Map 的 key 是 number
+  const id = typeof farmlandId === 'string' ? Number.parseInt(farmlandId, 10) : farmlandId;
+  if (Number.isNaN(id)) return undefined;
+  return farmlandMap.value.get(id);
 }
 
 // 查看详情
@@ -416,5 +419,3 @@ onMounted(() => {
     </NCard>
   </div>
 </template>
-
-<style scoped></style>
