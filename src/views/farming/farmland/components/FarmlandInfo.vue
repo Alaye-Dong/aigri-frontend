@@ -78,7 +78,9 @@ defineExpose({ restoreValidation });
 </script>
 
 <template>
-  <div class="info-panel w-320px flex flex-col flex-shrink-0 overflow-hidden rounded-8px bg-white shadow-sm">
+  <div
+    class="info-panel w-320px flex flex-col flex-shrink-0 overflow-hidden rounded-8px bg-white shadow-sm dark:bg-dark"
+  >
     <!-- ===== 空态 ===== -->
     <div
       v-if="mode === 'view' && !farmland"

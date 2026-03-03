@@ -33,7 +33,9 @@ function formatDate(dateStr: string | null | undefined): string {
 </script>
 
 <template>
-  <div class="farmland-list-panel w-260px flex flex-col flex-shrink-0 overflow-hidden rounded-8px bg-white shadow-sm">
+  <div
+    class="farmland-list-panel w-260px flex flex-col flex-shrink-0 overflow-hidden rounded-8px bg-white shadow-sm dark:bg-dark"
+  >
     <!-- 顶部标题栏 -->
     <div
       class="panel-header dark:border-dark-80 flex items-center justify-between border-b border-gray-100 px-16px py-10px"
