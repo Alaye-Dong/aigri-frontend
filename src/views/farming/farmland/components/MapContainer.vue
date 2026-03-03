@@ -38,8 +38,11 @@ const vertexCount = ref(0);
 
 // ---------- 工具函数 ----------
 
-const deg2rad = (deg: number) => (deg * Math.PI) / 180;
+/** 天地图 API Key (从环境变量读取) */
+const TIANDITU_TK = import.meta.env.VITE_TIANDITU_TK || '';
 
+
+const deg2rad = (deg: number) => (deg * Math.PI) / 180;
 const calculateArea = (latlngs: L.LatLng[]): number => {
   const earthRadius = 6371000;
   let area = 0;
@@ -172,22 +175,28 @@ const initMap = () => {
     attributionControl: false
   }).setView([28.415, 116.043], 13);
 
-  // 卫星底图
-  L.tileLayer('http://webst02.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}', {
-    maxNativeZoom: 16,
-    maxZoom: 22,
-    minZoom: 3,
-    attribution: '© 高德地图',
-    errorTileUrl: ''
-  }).addTo(map);
+  // 天地图影像底图 (WMTS 球面墨卡托投影)
+  L.tileLayer(
+    `http://t0.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=${TIANDITU_TK}`,
+    {
+      maxNativeZoom: 18,
+      maxZoom: 22,
+      minZoom: 3,
+      attribution: '© 天地图',
+      errorTileUrl: ''
+    }
+  ).addTo(map);
 
-  // 路网标注
-  L.tileLayer('http://webst02.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}', {
-    maxNativeZoom: 18,
-    maxZoom: 22,
-    minZoom: 3,
-    errorTileUrl: ''
-  }).addTo(map);
+  // 天地图影像注记 (中文地名标注)
+  L.tileLayer(
+    `http://t0.tianditu.gov.cn/cia_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cia&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=${TIANDITU_TK}`,
+    {
+      maxNativeZoom: 18,
+      maxZoom: 22,
+      minZoom: 3,
+      errorTileUrl: ''
+    }
+  ).addTo(map);
 
   // 绘制图层组
   drawnItems = new L.FeatureGroup();

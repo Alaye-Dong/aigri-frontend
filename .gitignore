@@ -32,4 +32,8 @@ coverage
 package-lock.json
 yarn.lock
 
-.VSCodeCounter
+.VSCodeCounter *
+
+# Environment variables
+.env.local
+.env.*.local
