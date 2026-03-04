@@ -189,6 +189,13 @@ onMounted(() => {
   loadFarmlands();
   loadUserOptions();
 });
+
+/** 刷新地图尺寸 */
+function invalidateSize() {
+  mapRef.value?.invalidateSize();
+}
+
+defineExpose({ invalidateSize });
 </script>
 
 <template>

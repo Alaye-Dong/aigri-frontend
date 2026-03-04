@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { ref } from 'vue';
+import { nextTick, ref, watch } from 'vue';
 import { NCard, NTabPane, NTabs } from 'naive-ui';
 import { $t } from '@/locales';
 import FarmlandListTab from './components/FarmlandListTab.vue';
@@ -10,6 +10,15 @@ defineOptions({
 });
 
 const activeTab = ref<'list' | 'map'>('list');
+const mapTabRef = ref<InstanceType<typeof FarmlandMapTab> | null>(null);
+
+// 切换到地图标签时刷新地图尺寸
+watch(activeTab, async newTab => {
+  if (newTab === 'map') {
+    await nextTick();
+    mapTabRef.value?.invalidateSize();
+  }
+});
 </script>
 
 <template>
@@ -25,7 +34,7 @@ const activeTab = ref<'list' | 'map'>('list');
       </template>
       <div class="h-full">
         <FarmlandListTab v-show="activeTab === 'list'" />
-        <FarmlandMapTab v-show="activeTab === 'map'" />
+        <FarmlandMapTab v-show="activeTab === 'map'" ref="mapTabRef" />
       </div>
     </NCard>
   </div>

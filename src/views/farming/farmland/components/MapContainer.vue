@@ -41,8 +41,8 @@ const vertexCount = ref(0);
 /** 天地图 API Key (从环境变量读取) */
 const TIANDITU_TK = import.meta.env.VITE_TIANDITU_TK || '';
 
-
 const deg2rad = (deg: number) => (deg * Math.PI) / 180;
+
 const calculateArea = (latlngs: L.LatLng[]): number => {
   const earthRadius = 6371000;
   let area = 0;
@@ -295,7 +295,12 @@ function flyToSelected() {
   }
 }
 
-defineExpose({ clearDrawn, setPolygon });
+/** 刷新地图尺寸（用于容器尺寸变化时） */
+function invalidateSize() {
+  map?.invalidateSize();
+}
+
+defineExpose({ clearDrawn, setPolygon, invalidateSize });
 
 // ---------- 监听 ----------
 
