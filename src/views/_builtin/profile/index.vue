@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { NCard, NForm, NFormItem, NInput, NButton, NGrid, NGi } from 'naive-ui';
-import { fetchGetProfile, fetchUpdateProfile, fetchChangePassword } from '@/service/api/system';
+import { onMounted, ref } from 'vue';
+import { NButton, NCard, NForm, NFormItem, NGi, NGrid, NInput } from 'naive-ui';
+import { fetchChangePassword, fetchGetProfile, fetchUpdateProfile } from '@/service/api/system';
 import { $t } from '@/locales';
 
 defineOptions({

@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { jsonClone } from '@sa/utils';
 import { useLoading } from '@sa/hooks';
-import { fetchGetSuggestionInfo, fetchAdoptSuggestion } from '@/service/api/ai';
+import { fetchAdoptSuggestion, fetchGetSuggestionInfo } from '@/service/api/ai';
 
 defineOptions({
   name: 'SuggestionDetailDrawer'
@@ -124,7 +124,10 @@ watch(visible, () => {
             <NInput :value="model.farmlandId?.toString() || '-'" placeholder="农田ID" readonly />
           </NFormItem>
           <NFormItem label="紧急程度" path="urgencyLevel">
-            <NTag :type="model.urgencyLevel === 'URGENT' ? 'error' : model.urgencyLevel === 'HIGH' ? 'warning' : 'info'" size="small">
+            <NTag
+              :type="model.urgencyLevel === 'URGENT' ? 'error' : model.urgencyLevel === 'HIGH' ? 'warning' : 'info'"
+              size="small"
+            >
               {{ urgencyNames[model.urgencyLevel] || model.urgencyLevel }}
             </NTag>
           </NFormItem>
