@@ -150,5 +150,50 @@ declare namespace Api {
     >;
 
     type EnvDataList = Common.PaginatingQueryRecord<EnvData>;
+
+    /** MQTT模拟器设备配置 */
+    type SimDeviceConfig = {
+      /** 设备序列号 */
+      serialNo: string;
+      /** 设备类型 */
+      type: string;
+      /** 数据发布间隔(毫秒) */
+      dataIntervalMs?: number;
+      /** 心跳间隔(毫秒) */
+      heartbeatIntervalMs?: number;
+      /** 空气温度范围 */
+      minAirTemp?: number;
+      maxAirTemp?: number;
+      /** 空气湿度范围 */
+      minAirHumidity?: number;
+      maxAirHumidity?: number;
+      /** 土壤湿度范围 */
+      minSoilMoisture?: number;
+      maxSoilMoisture?: number;
+      /** 光照强度范围 */
+      minLightLux?: number;
+      maxLightLux?: number;
+      /** CO2浓度范围 */
+      minCo2Ppm?: number;
+      maxCo2Ppm?: number;
+    };
+
+    /** MQTT模拟器设备状态 */
+    type SimDeviceStatus = {
+      /** 设备序列号 */
+      serialNo: string;
+      /** 设备类型 */
+      type: string;
+      /** 运行状态 */
+      running: boolean;
+      /** 最后数据发布时间 */
+      lastDataTime: string | null;
+      /** 最后心跳时间 */
+      lastHeartbeatTime: string | null;
+      /** 消息计数 */
+      messageCount: number;
+      /** 错误信息 */
+      errorMessage: string | null;
+    };
   }
 }

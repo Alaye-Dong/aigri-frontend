@@ -28,6 +28,7 @@ declare module "@elegant-router/types" {
     "env_alert-rule": "/env/alert-rule";
     "env_device": "/env/device";
     "env_env-data": "/env/env-data";
+    "env_mqtt-simulator": "/env/mqtt-simulator";
     "farming": "/farming";
     "farming_crop": "/farming/crop";
     "farming_farming-log": "/farming/farming-log";
@@ -108,6 +109,7 @@ declare module "@elegant-router/types" {
     | "env_alert-rule"
     | "env_device"
     | "env_env-data"
+    | "env_mqtt-simulator"
     | "farming_crop"
     | "farming_farming-log"
     | "farming_farmland"
@@ -184,7 +186,7 @@ declare module "@elegant-router/types" {
         component: `view.${K}`;
       }
     : never;
-  
+
   /**
    * the center level route
    */
@@ -207,7 +209,7 @@ declare module "@elegant-router/types" {
         children: (CenterLevelRoute<GetChildRouteKey<K>> | LastLevelRoute<GetChildRouteKey<K>>)[];
       }
     : never;
-  
+
   /**
    * the custom first level route
    */

@@ -120,6 +120,15 @@ export const generatedRoutes: GeneratedRoute[] = [
           i18nKey: 'route.env_env-data',
           icon: 'mdi:data'
         }
+      },
+      {
+        name: 'env_mqtt-simulator',
+        path: '/env/mqtt-simulator',
+        component: 'view.env_mqtt-simulator',
+        meta: {
+          title: 'env_mqtt-simulator',
+          i18nKey: 'route.env_mqtt-simulator'
+        }
       }
     ]
   },

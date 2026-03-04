@@ -27,6 +27,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "env_alert-rule": () => import("@/views/env/alert-rule/index.vue"),
   env_device: () => import("@/views/env/device/index.vue"),
   "env_env-data": () => import("@/views/env/env-data/index.vue"),
+  "env_mqtt-simulator": () => import("@/views/env/mqtt-simulator/index.vue"),
   farming_crop: () => import("@/views/farming/crop/index.vue"),
   "farming_farming-log": () => import("@/views/farming/farming-log/index.vue"),
   farming_farmland: () => import("@/views/farming/farmland/index.vue"),

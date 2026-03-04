@@ -174,6 +174,7 @@ const routeMap: RouteMap = {
   "env_alert-rule": "/env/alert-rule",
   "env_device": "/env/device",
   "env_env-data": "/env/env-data",
+  "env_mqtt-simulator": "/env/mqtt-simulator",
   "farming": "/farming",
   "farming_crop": "/farming/crop",
   "farming_farming-log": "/farming/farming-log",
