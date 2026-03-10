@@ -100,6 +100,7 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
               icon="material-symbols:drive-file-rename-outline-outline"
               tooltipContent={$t('common.edit')}
               onClick={() => edit(row.userId)}
+              disabled={row.userId === 1 || row.userId === '1'}
             />
           );
         };
