@@ -19,10 +19,59 @@ const deviceOptions = ref<CommonType.Option<string>[]>([]);
 // Store the full farmland objects to look up name by ID if needed (for the API which takes Name)
 const farmlandMap = ref<Map<string, string>>(new Map());
 
+// Time range for charts - default to last 24 hours (store as timestamp pair)
+const timeRangeTimestamp = ref<[number, number] | null>(null);
+
+// Computed formatted time range for API calls
+const formattedTimeRange = computed(() => {
+  if (!timeRangeTimestamp.value) return null;
+  return [
+    formatDateTime(new Date(timeRangeTimestamp.value[0])),
+    formatDateTime(new Date(timeRangeTimestamp.value[1]))
+  ] as [string, string];
+});
+
 const selectedFarmlandName = computed(() => {
   if (!farmlandId.value) return null;
   return farmlandMap.value.get(farmlandId.value) || null;
 });
+
+// Format date time to string
+function formatDateTime(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+// Initialize default time range (last 24 hours)
+function initDefaultTimeRange() {
+  const now = Date.now();
+  const startTime = now - 24 * 60 * 60 * 1000; // 24 hours ago
+  timeRangeTimestamp.value = [startTime, now];
+}
+
+// Shortcut options for date picker (return timestamps in milliseconds)
+const timeRangeShortcuts = {
+  最近24小时: () => {
+    const end = Date.now();
+    const start = end - 24 * 60 * 60 * 1000;
+    return [start, end] as [number, number];
+  },
+  最近7天: () => {
+    const end = Date.now();
+    const start = end - 7 * 24 * 60 * 60 * 1000;
+    return [start, end] as [number, number];
+  },
+  最近30天: () => {
+    const end = Date.now();
+    const start = end - 30 * 24 * 60 * 60 * 1000;
+    return [start, end] as [number, number];
+  }
+};
 
 async function getFarmlandList() {
   const { data, error } = await fetchGetFarmlandList({ current: 1, size: 100 });
@@ -62,6 +111,7 @@ function handleFarmlandChange(val: string | null) {
 onMounted(() => {
   getFarmlandList();
   getDeviceList(); // Initial load of devices (all)
+  initDefaultTimeRange(); // Initialize default time range
 });
 </script>
 
@@ -91,14 +141,36 @@ onMounted(() => {
             class="w-240px"
           />
         </NSpace>
+        <NSpace align="center">
+          <span>时间范围:</span>
+          <NDatePicker
+            v-model:value="timeRangeTimestamp"
+            type="datetimerange"
+            :shortcuts="timeRangeShortcuts"
+            clearable
+            class="w-400px"
+          />
+        </NSpace>
       </NSpace>
     </NCard>
 
     <EnvDataCard :farmland-id="farmlandId" :device-id="deviceId" />
 
-    <EnvTrendChart :farmland-name="selectedFarmlandName" :farmland-id="farmlandId" :device-id="deviceId" />
+    <EnvTrendChart
+      :farmland-name="selectedFarmlandName"
+      :farmland-id="farmlandId"
+      :device-id="deviceId"
+      :start-time="formattedTimeRange?.[0]"
+      :end-time="formattedTimeRange?.[1]"
+    />
 
-    <EnvAdvancedChart :farmland-name="selectedFarmlandName" :farmland-id="farmlandId" :device-id="deviceId" />
+    <EnvAdvancedChart
+      :farmland-name="selectedFarmlandName"
+      :farmland-id="farmlandId"
+      :device-id="deviceId"
+      :start-time="formattedTimeRange?.[0]"
+      :end-time="formattedTimeRange?.[1]"
+    />
   </div>
 </template>
 

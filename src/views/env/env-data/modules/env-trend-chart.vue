@@ -43,16 +43,20 @@ const props = defineProps<{
   deviceSerialNo?: string | null;
   farmlandId?: string | null;
   deviceId?: string | null;
+  startTime?: string | null;
+  endTime?: string | null;
 }>();
 
 async function getData() {
   const { data, error } = await fetchGetEnvDataList({
     current: 1,
-    size: 50,
+    size: 500,
     farmlandName: props.farmlandName,
     deviceSerialNo: props.deviceSerialNo,
     farmlandId: props.farmlandId,
-    deviceId: props.deviceId
+    deviceId: props.deviceId,
+    startTime: props.startTime,
+    endTime: props.endTime
   });
 
   if (!error && data) {
@@ -113,7 +117,7 @@ watch(
 );
 
 watch(
-  () => [props.farmlandName, props.deviceSerialNo, props.farmlandId, props.deviceId],
+  () => [props.farmlandName, props.deviceSerialNo, props.farmlandId, props.deviceId, props.startTime, props.endTime],
   () => {
     getData();
   }
