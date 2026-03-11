@@ -347,7 +347,45 @@ const local: App.I18n.Schema = {
         desc4: 'Soybean is busy writing project documentation for soybean-admin!',
         desc5: 'Soybean just wrote some of the workbench pages casually, and it was enough to see!'
       },
-      creativity: 'Creativity'
+      creativity: 'Creativity',
+      // Smart Agriculture Dashboard
+      agri: {
+        // Stats Cards
+        deviceCount: 'Total Devices',
+        onlineDevices: 'Online Devices',
+        farmlandArea: 'Farmland Area',
+        activeCrops: 'Active Crops',
+        // Header Banner Stats
+        deviceOnlineRate: 'Device Online Rate',
+        pendingAlerts: 'Pending Alerts',
+        monitoredFarmlands: 'Monitored Farmlands',
+        // Charts
+        tempTrend: 'Temperature Trend',
+        humidityTrend: 'Humidity Trend',
+        envTrendChart: 'Environment Trend',
+        alertDistribution: 'Alert Distribution',
+        // Alerts Panel
+        recentAlerts: 'Recent Alerts',
+        moreAlerts: 'More Alerts',
+        noAlerts: 'No alerts',
+        alertLevel: {
+          info: 'Info',
+          warning: 'Warning',
+          danger: 'Critical'
+        },
+        // Activities
+        recentActivities: 'Farming Activities',
+        moreActivities: 'More Activities',
+        noActivity: 'No farming records',
+        // Units
+        unitDevice: 'units',
+        unitArea: 'mu',
+        unitCrop: 'types',
+        // Other
+        viewAll: 'View All',
+        today: 'Today',
+        thisWeek: 'This Week'
+      }
     },
     system: {
       user: {

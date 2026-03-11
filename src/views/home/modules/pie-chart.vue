@@ -1,18 +1,24 @@
 <script setup lang="ts">
-import { watch } from 'vue';
-import { useAppStore } from '@/store/modules/app';
+import { onMounted } from 'vue';
+import { fetchGetAlertLogList } from '@/service/api/env/alert-log';
 import { useEcharts } from '@/hooks/common/echarts';
-import { $t } from '@/locales';
 
 defineOptions({
   name: 'PieChart'
 });
 
-const appStore = useAppStore();
+// Hardcoded Chinese text for chart labels
+const CHART_TITLE = '告警分布';
+const LABELS = {
+  info: '提示',
+  warning: '警告',
+  danger: '严重'
+};
 
 const { domRef, updateOptions } = useEcharts(() => ({
   tooltip: {
-    trigger: 'item'
+    trigger: 'item',
+    formatter: '{b}: {c} ({d}%)'
   },
   legend: {
     bottom: '1%',
@@ -23,8 +29,8 @@ const { domRef, updateOptions } = useEcharts(() => ({
   },
   series: [
     {
-      color: ['#5da8ff', '#8e9dff', '#fedc69', '#26deca'],
-      name: $t('page.home.schedule'),
+      color: ['#3b82f6', '#f59e0b', '#ef4444'],
+      name: CHART_TITLE,
       type: 'pie',
       radius: ['45%', '75%'],
       avoidLabelOverlap: false,
@@ -40,7 +46,8 @@ const { domRef, updateOptions } = useEcharts(() => ({
       emphasis: {
         label: {
           show: true,
-          fontSize: '12'
+          fontSize: '14',
+          fontWeight: 'bold'
         }
       },
       labelLine: {
@@ -51,53 +58,58 @@ const { domRef, updateOptions } = useEcharts(() => ({
   ]
 }));
 
-async function mockData() {
-  await new Promise(resolve => {
-    setTimeout(resolve, 1000);
+interface AlertLogItem {
+  severity: string;
+  [key: string]: unknown;
+}
+
+async function fetchAlertData() {
+  const { error, data } = await fetchGetAlertLogList({
+    current: 1,
+    size: 1000
   });
+
+  if (error || !data?.records) return { info: 0, warning: 0, danger: 0 };
+
+  const records = data.records as AlertLogItem[];
+
+  const severityCount: Record<string, number> = {
+    info: 0,
+    warning: 0,
+    danger: 0
+  };
+
+  records.forEach(record => {
+    const severity = record.severity?.toLowerCase() || 'info';
+    if (severityCount[severity] !== undefined) {
+      severityCount[severity] += 1;
+    }
+  });
+
+  return severityCount;
+}
+
+function getChartData(severityCount: Record<string, number>) {
+  return [
+    { name: LABELS.info, value: severityCount.info },
+    { name: LABELS.warning, value: severityCount.warning },
+    { name: LABELS.danger, value: severityCount.danger }
+  ];
+}
+
+async function loadData() {
+  const severityCount = await fetchAlertData();
 
   updateOptions(opts => {
-    opts.series[0].data = [
-      { name: $t('page.home.study'), value: 20 },
-      { name: $t('page.home.entertainment'), value: 10 },
-      { name: $t('page.home.work'), value: 40 },
-      { name: $t('page.home.rest'), value: 30 }
-    ];
-
+    opts.series[0].data = getChartData(severityCount);
+    opts.series[0].name = CHART_TITLE;
     return opts;
   });
 }
 
-function updateLocale() {
-  updateOptions((opts, factory) => {
-    const originOpts = factory();
-
-    opts.series[0].name = originOpts.series[0].name;
-
-    opts.series[0].data = [
-      { name: $t('page.home.study'), value: 20 },
-      { name: $t('page.home.entertainment'), value: 10 },
-      { name: $t('page.home.work'), value: 40 },
-      { name: $t('page.home.rest'), value: 30 }
-    ];
-
-    return opts;
-  });
-}
-
-async function init() {
-  mockData();
-}
-
-watch(
-  () => appStore.locale,
-  () => {
-    updateLocale();
-  }
-);
-
-// init
-init();
+onMounted(() => {
+  loadData();
+});
 </script>
 
 <template>

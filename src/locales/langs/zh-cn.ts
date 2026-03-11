@@ -346,7 +346,45 @@ const local: App.I18n.Schema = {
         desc4: 'Soybean 正在忙于为soybean-admin写项目说明文档！',
         desc5: 'Soybean 刚才把工作台页面随便写了一些，凑合能看了！'
       },
-      creativity: '创意'
+      creativity: '创意',
+      // Smart Agriculture Dashboard
+      agri: {
+        // Stats Cards
+        deviceCount: '设备总数',
+        onlineDevices: '在线设备',
+        farmlandArea: '农田面积',
+        activeCrops: '种植作物',
+        // Header Banner Stats
+        deviceOnlineRate: '设备在线率',
+        pendingAlerts: '未处理告警',
+        monitoredFarmlands: '监控农田',
+        // Charts
+        tempTrend: '温度趋势',
+        humidityTrend: '湿度趋势',
+        envTrendChart: '环境监测趋势',
+        alertDistribution: '告警分布',
+        // Alerts Panel
+        recentAlerts: '最近告警',
+        moreAlerts: '更多告警',
+        noAlerts: '暂无告警',
+        alertLevel: {
+          info: '提示',
+          warning: '警告',
+          danger: '严重'
+        },
+        // Activities
+        recentActivities: '农事活动',
+        moreActivities: '更多活动',
+        noActivity: '暂无农事记录',
+        // Units
+        unitDevice: '台',
+        unitArea: '亩',
+        unitCrop: '种',
+        // Other
+        viewAll: '查看全部',
+        today: '今日',
+        thisWeek: '本周'
+      }
     },
     system: {
       user: {

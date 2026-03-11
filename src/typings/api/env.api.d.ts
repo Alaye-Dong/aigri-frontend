@@ -90,6 +90,8 @@ declare namespace Api {
       alertContent: string;
       /** 指标值 */
       metricValue: number;
+      /** 告警级别(info, warning, danger) */
+      severity: string;
       /** 处理状态: 0-未读, 1-已处理 */
       status: ProcessStatusType;
       /** 创建时间 */

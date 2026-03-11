@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import { watch } from 'vue';
+import { fetchGetEnvDataList } from '@/service/api/env/env-data';
 import { useAppStore } from '@/store/modules/app';
 import { useEcharts } from '@/hooks/common/echarts';
-import { $t } from '@/locales';
 
 defineOptions({
   name: 'LineChart'
 });
 
 const appStore = useAppStore();
+
+// Hardcoded Chinese text for chart labels
+const TEMP_LABEL = '温度 (°C)';
+const HUMIDITY_LABEL = '湿度 (%)';
 
 const { domRef, updateOptions } = useEcharts(() => ({
   tooltip: {
@@ -21,7 +25,7 @@ const { domRef, updateOptions } = useEcharts(() => ({
     }
   },
   legend: {
-    data: [$t('page.home.downloadCount'), $t('page.home.registerCount')],
+    data: [TEMP_LABEL, HUMIDITY_LABEL],
     top: '0'
   },
   grid: {
@@ -35,16 +39,31 @@ const { domRef, updateOptions } = useEcharts(() => ({
     boundaryGap: false,
     data: [] as string[]
   },
-  yAxis: {
-    type: 'value'
-  },
+  yAxis: [
+    {
+      type: 'value',
+      name: TEMP_LABEL,
+      position: 'left',
+      axisLabel: {
+        formatter: '{value}°C'
+      }
+    },
+    {
+      type: 'value',
+      name: HUMIDITY_LABEL,
+      position: 'right',
+      axisLabel: {
+        formatter: '{value}%'
+      }
+    }
+  ],
   series: [
     {
-      color: '#8e9dff',
-      name: $t('page.home.downloadCount'),
+      color: '#ff6b6b',
+      name: TEMP_LABEL,
       type: 'line',
       smooth: true,
-      stack: 'Total',
+      yAxisIndex: 0,
       areaStyle: {
         color: {
           type: 'linear',
@@ -55,11 +74,11 @@ const { domRef, updateOptions } = useEcharts(() => ({
           colorStops: [
             {
               offset: 0.25,
-              color: '#8e9dff'
+              color: 'rgba(255, 107, 107, 0.6)'
             },
             {
               offset: 1,
-              color: '#fff'
+              color: 'rgba(255, 107, 107, 0.05)'
             }
           ]
         }
@@ -70,11 +89,11 @@ const { domRef, updateOptions } = useEcharts(() => ({
       data: [] as number[]
     },
     {
-      color: '#26deca',
-      name: $t('page.home.registerCount'),
+      color: '#4ecdc4',
+      name: HUMIDITY_LABEL,
       type: 'line',
       smooth: true,
-      stack: 'Total',
+      yAxisIndex: 1,
       areaStyle: {
         color: {
           type: 'linear',
@@ -85,11 +104,11 @@ const { domRef, updateOptions } = useEcharts(() => ({
           colorStops: [
             {
               offset: 0.25,
-              color: '#26deca'
+              color: 'rgba(78, 205, 196, 0.6)'
             },
             {
               offset: 1,
-              color: '#fff'
+              color: 'rgba(78, 205, 196, 0.05)'
             }
           ]
         }
@@ -97,45 +116,57 @@ const { domRef, updateOptions } = useEcharts(() => ({
       emphasis: {
         focus: 'series'
       },
-      data: []
+      data: [] as number[]
     }
   ]
 }));
 
-async function mockData() {
-  await new Promise(resolve => {
-    setTimeout(resolve, 1000);
+async function fetchEnvData() {
+  const { data, error } = await fetchGetEnvDataList({
+    current: 1,
+    size: 24
+  });
+
+  if (error || !data?.records?.length) {
+    return;
+  }
+
+  // Sort by collectTime ascending for chronological display
+  const sortedRecords = [...data.records].sort(
+    (a, b) => new Date(a.collectTime).getTime() - new Date(b.collectTime).getTime()
+  );
+
+  const timeLabels: string[] = [];
+  const tempData: number[] = [];
+  const humidityData: number[] = [];
+
+  sortedRecords.forEach(record => {
+    // Format collectTime to HH:mm
+    const date = new Date(record.collectTime);
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    timeLabels.push(`${hours}:${minutes}`);
+    tempData.push(record.airTemp ?? 0);
+    humidityData.push(record.airHumidity ?? 0);
   });
 
   updateOptions(opts => {
-    opts.xAxis.data = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00', '24:00'];
-    opts.series[0].data = [4623, 6145, 6268, 6411, 1890, 4251, 2978, 3880, 3606, 4311];
-    opts.series[1].data = [2208, 2016, 2916, 4512, 8281, 2008, 1963, 2367, 2956, 678];
-
-    return opts;
-  });
-}
-
-function updateLocale() {
-  updateOptions((opts, factory) => {
-    const originOpts = factory();
-
-    opts.legend.data = originOpts.legend.data;
-    opts.series[0].name = originOpts.series[0].name;
-    opts.series[1].name = originOpts.series[1].name;
+    opts.xAxis.data = timeLabels;
+    opts.series[0].data = tempData;
+    opts.series[1].data = humidityData;
 
     return opts;
   });
 }
 
 async function init() {
-  mockData();
+  await fetchEnvData();
 }
 
 watch(
   () => appStore.locale,
   () => {
-    updateLocale();
+    // Labels are hardcoded, no locale update needed
   }
 );
 
