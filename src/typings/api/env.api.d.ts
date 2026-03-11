@@ -199,8 +199,10 @@ declare namespace Api {
       /** 消息计数 */
       messageCount: number;
       /** 错误信息 */
+      errorMessage: string | null;
       /** MQTT连接状态 */
       mqttConnected: boolean;
     };
   }
 }
+

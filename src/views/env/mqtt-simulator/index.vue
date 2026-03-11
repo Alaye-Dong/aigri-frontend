@@ -1,5 +1,6 @@
 <script setup lang="tsx">
 import { computed, onUnmounted, ref } from 'vue';
+import { NDivider, NPopconfirm, NTag } from 'naive-ui';
 import { useLoading } from '@sa/hooks';
 import {
   fetchGetSimulatorList,
@@ -16,6 +17,7 @@ import MqttSimulatorOperateDrawer from './modules/mqtt-simulator-operate-drawer.
 const { loading, startLoading, endLoading } = useLoading();
 
 const data = ref<Api.Env.SimDeviceStatus[]>([]);
+const drawerVisible = ref(false);
 
 // 已在模拟器中的设备序列号列表
 const existingSerialNos = computed(() => data.value.map(d => d.serialNo));
@@ -27,20 +29,20 @@ const columns = [
   {
     key: 'index',
     title: $t('common.index'),
-    align: 'center',
+    align: 'center' as const,
     width: 64,
     render: (_: unknown, index: number) => index + 1
   },
   {
     key: 'serialNo',
     title: '序列号',
-    align: 'center',
+    align: 'center' as const,
     minWidth: 140
   },
   {
     key: 'type',
     title: '设备类型',
-    align: 'center',
+    align: 'center' as const,
     minWidth: 100,
     render: (row: Api.Env.SimDeviceStatus) => {
       const typeMap: Record<string, string> = {
@@ -54,12 +56,10 @@ const columns = [
   {
     key: 'running',
     title: '运行状态',
-    align: 'center',
+    align: 'center' as const,
     minWidth: 120,
     render: (row: Api.Env.SimDeviceStatus) => {
-      // Show different states: scheduler running + MQTT connected
       if (row.running) {
-        // Scheduler is running, check MQTT connection
         return (
           <div class="flex-col-center gap-4px">
             <NTag type="success" size="small">
@@ -80,32 +80,31 @@ const columns = [
       );
     }
   },
-
   {
     key: 'messageCount',
     title: '消息计数',
-    align: 'center',
+    align: 'center' as const,
     minWidth: 100,
     render: (row: Api.Env.SimDeviceStatus) => row.messageCount.toLocaleString()
   },
   {
     key: 'lastDataTime',
     title: '最后数据时间',
-    align: 'center',
+    align: 'center' as const,
     minWidth: 150,
     render: (row: Api.Env.SimDeviceStatus) => row.lastDataTime || '-'
   },
   {
     key: 'lastHeartbeatTime',
     title: '最后心跳时间',
-    align: 'center',
+    align: 'center' as const,
     minWidth: 150,
     render: (row: Api.Env.SimDeviceStatus) => row.lastHeartbeatTime || '-'
   },
   {
     key: 'errorMessage',
     title: '错误信息',
-    align: 'center',
+    align: 'center' as const,
     minWidth: 150,
     render: (row: Api.Env.SimDeviceStatus) => {
       if (!row.errorMessage) return '-';
@@ -119,7 +118,7 @@ const columns = [
   {
     key: 'operate',
     title: $t('common.operate'),
-    align: 'center',
+    align: 'center' as const,
     width: 220,
     render: (row: Api.Env.SimDeviceStatus) => {
       const startBtn = () => (
