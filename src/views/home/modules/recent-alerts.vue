@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { fetchGetAlertLogList } from '@/service/api/env/alert-log';
 
 defineOptions({
   name: 'RecentAlerts'
 });
+
+const router = useRouter();
 
 // Hardcoded Chinese text
 const CARD_TITLE = '最近告警';
@@ -27,6 +30,10 @@ const severityTypeMap: Record<string, 'info' | 'warning' | 'error'> = {
 
 function getSeverityLabel(severity: string): string {
   return SEVERITY_LABELS[severity] || severity;
+}
+
+function goToAlertLog() {
+  router.push('/env/alert-log');
 }
 
 async function getAlertList() {
@@ -64,7 +71,9 @@ onMounted(() => {
 <template>
   <NCard :title="CARD_TITLE" :bordered="false" size="small" segmented class="card-wrapper" :loading="loading">
     <template #header-extra>
-      <a class="cursor-pointer text-primary" href="javascript:;">{{ MORE_TEXT }}</a>
+      <a class="cursor-pointer text-primary transition-all duration-300 hover:underline" @click="goToAlertLog">
+        {{ MORE_TEXT }}
+      </a>
     </template>
     <NList v-if="alertList.length > 0">
       <NListItem v-for="item in alertList" :key="item.id">

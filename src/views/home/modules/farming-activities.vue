@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { fetchGetFarmingLogList } from '@/service/api/farming/farming-log';
 import SvgIcon from '@/components/custom/svg-icon.vue';
 
 defineOptions({
   name: 'FarmingActivities'
 });
+
+const router = useRouter();
 
 // Hardcoded Chinese text
 const CARD_TITLE = '农事活动';
@@ -54,6 +57,10 @@ function getOperateColor(type: string): string {
   return operateTypeColorMap[type] || '#6b7280';
 }
 
+function goToFarmingLog() {
+  router.push('/farming/farming-log');
+}
+
 async function fetchActivities() {
   loading.value = true;
   const { error, data } = await fetchGetFarmingLogList({
@@ -81,7 +88,10 @@ onMounted(() => {
 <template>
   <NCard :title="CARD_TITLE" :bordered="false" size="small" segmented class="h-full overflow-hidden card-wrapper">
     <template #header-extra>
-      <a class="cursor-pointer text-13px text-primary transition-all duration-300 hover:underline">
+      <a
+        class="cursor-pointer text-13px text-primary transition-all duration-300 hover:underline"
+        @click="goToFarmingLog"
+      >
         {{ MORE_TEXT }}
       </a>
     </template>
