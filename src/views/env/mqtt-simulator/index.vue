@@ -54,15 +54,32 @@ const columns = [
     key: 'running',
     title: '运行状态',
     align: 'center',
-    minWidth: 100,
+    minWidth: 120,
     render: (row: Api.Env.SimDeviceStatus) => {
+      // Show different states: scheduler running + MQTT connected
+      if (row.running) {
+        // Scheduler is running, check MQTT connection
+        return (
+          <div class="flex-col-center gap-4px">
+            <NTag type="success" size="small">
+              运行中
+            </NTag>
+            {!row.mqttConnected && (
+              <NTag type="warning" size="small">
+                MQTT未连接
+              </NTag>
+            )}
+          </div>
+        );
+      }
       return (
-        <NTag type={row.running ? 'success' : 'default'} size="small">
-          {row.running ? '运行中' : '已停止'}
+        <NTag type="default" size="small">
+          已停止
         </NTag>
       );
     }
   },
+
   {
     key: 'messageCount',
     title: '消息计数',
