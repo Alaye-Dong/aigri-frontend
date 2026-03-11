@@ -1,6 +1,5 @@
 <script setup lang="tsx">
-import { onUnmounted, ref } from 'vue';
-import { NButton, NCard, NDataTable, NDivider, NPopconfirm, NTag } from 'naive-ui';
+import { computed, onUnmounted, ref } from 'vue';
 import { useLoading } from '@sa/hooks';
 import {
   fetchGetSimulatorList,
@@ -17,7 +16,9 @@ import MqttSimulatorOperateDrawer from './modules/mqtt-simulator-operate-drawer.
 const { loading, startLoading, endLoading } = useLoading();
 
 const data = ref<Api.Env.SimDeviceStatus[]>([]);
-const drawerVisible = ref(false);
+
+// 已在模拟器中的设备序列号列表
+const existingSerialNos = computed(() => data.value.map(d => d.serialNo));
 
 // Auto refresh timer
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
@@ -277,7 +278,11 @@ onUnmounted(() => {
         :row-key="(row: Api.Env.SimDeviceStatus) => row.serialNo"
         class="sm:h-full"
       />
-      <MqttSimulatorOperateDrawer v-model:visible="drawerVisible" @submitted="getData" />
+      <MqttSimulatorOperateDrawer
+        v-model:visible="drawerVisible"
+        :existing-serial-nos="existingSerialNos"
+        @submitted="getData"
+      />
     </NCard>
   </div>
 </template>

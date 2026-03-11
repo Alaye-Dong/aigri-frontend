@@ -1,11 +1,31 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import { NButton, NDrawer, NDrawerContent, NForm, NFormItem, NInput, NInputNumber, NSelect, NSpin } from 'naive-ui';
+import { ref, watch } from 'vue';
+import {
+  NButton,
+  NDivider,
+  NDrawer,
+  NDrawerContent,
+  NForm,
+  NFormItem,
+  NInput,
+  NInputNumber,
+  NSelect,
+  NSpin
+} from 'naive-ui';
 import { useLoading } from '@sa/hooks';
-import { fetchCreateSimulator } from '@/service/api/env';
+import { fetchCreateSimulator, fetchGetDeviceList } from '@/service/api/env';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 
 const visible = defineModel<boolean>('visible', { required: true });
+
+interface Props {
+  /** 已在模拟器中的设备序列号列表，用于过滤 */
+  existingSerialNos?: string[];
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  existingSerialNos: () => []
+});
 
 interface Emits {
   (e: 'submitted'): void;
@@ -24,12 +44,24 @@ const model = ref<Model>(createDefaultModel());
 
 const { loading, startLoading, endLoading } = useLoading();
 
+/** 设备选择相关 */
+const deviceLoading = ref(false);
+const deviceOptions = ref<Array<{ label: string; value: string; device: Api.Env.Device }>>([]);
+const selectedDeviceSerialNo = ref<string | null>(null);
+
 /** 设备类型选项 */
 const deviceTypeOptions = [
   { label: '环境传感器', value: 'ENV_SENSOR' },
   { label: '土壤传感器', value: 'SOIL_SENSOR' },
   { label: '气象站', value: 'WEATHER_STATION' }
 ];
+
+/** 设备类型映射 */
+const deviceTypeMap: Record<string, string> = {
+  ENV_SENSOR: '环境传感器',
+  SOIL_SENSOR: '土壤传感器',
+  WEATHER_STATION: '气象站'
+};
 
 function createDefaultModel(): Model {
   return {
@@ -57,6 +89,38 @@ const rules: Record<RuleKey, App.Global.FormRule[]> = {
   type: [createRequiredRule('请选择设备类型')]
 };
 
+/** 加载已有设备列表 */
+async function loadDevices() {
+  deviceLoading.value = true;
+  try {
+    const { data, error } = await fetchGetDeviceList({ current: 1, size: 1000 });
+    if (error || !data?.records) {
+      deviceOptions.value = [];
+      return;
+    }
+    // 过滤掉已在模拟器中的设备
+    deviceOptions.value = data.records
+      .filter(device => !props.existingSerialNos.includes(device.serialNo))
+      .map(device => ({
+        label: `${device.serialNo} (${deviceTypeMap[device.type] || device.type}${device.farmlandName ? ` - ${device.farmlandName}` : ''})`,
+        value: device.serialNo,
+        device
+      }));
+  } finally {
+    deviceLoading.value = false;
+  }
+}
+
+/** 选择设备后自动填充 */
+function handleDeviceSelect(serialNo: string | null) {
+  if (!serialNo) return;
+  const option = deviceOptions.value.find(o => o.value === serialNo);
+  if (option) {
+    model.value.serialNo = option.device.serialNo;
+    model.value.type = option.device.type;
+  }
+}
+
 async function handleSubmit() {
   await validate();
 
@@ -78,7 +142,9 @@ function closeDrawer() {
 watch(visible, () => {
   if (visible.value) {
     model.value = createDefaultModel();
+    selectedDeviceSerialNo.value = null;
     restoreValidation();
+    loadDevices();
   }
 });
 </script>
@@ -88,6 +154,22 @@ watch(visible, () => {
     <NDrawerContent :title="title" :native-scrollbar="false" closable>
       <NSpin :show="loading">
         <NForm ref="formRef" :model="model" :rules="rules" label-placement="left" label-width="120px">
+          <h4 class="mb-2 font-medium">从已有设备选择</h4>
+          <NFormItem label="选择设备">
+            <NSelect
+              v-model:value="selectedDeviceSerialNo"
+              :options="deviceOptions"
+              :loading="deviceLoading"
+              placeholder="可选择已有设备自动填充"
+              clearable
+              filterable
+              @update:value="handleDeviceSelect"
+            />
+          </NFormItem>
+
+          <NDivider class="my-2!" />
+
+          <h4 class="mb-2 font-medium">或手动输入</h4>
           <NFormItem label="设备序列号" path="serialNo">
             <NInput v-model:value="model.serialNo" placeholder="请输入设备序列号" />
           </NFormItem>
