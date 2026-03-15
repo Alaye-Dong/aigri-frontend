@@ -60,10 +60,9 @@ function createDefaultModel(): Model {
 }
 
 const urgencyNames: Record<string, string> = {
-  URGENT: '紧急',
-  HIGH: '高',
-  MEDIUM: '中',
-  LOW: '低'
+  CAUTION: '注意',
+  WARNING: '警告',
+  TIP: '提示'
 };
 
 async function getSuggestionInfo(id?: CommonType.IdType) {
@@ -125,7 +124,7 @@ watch(visible, () => {
           </NFormItem>
           <NFormItem label="紧急程度" path="urgencyLevel">
             <NTag
-              :type="model.urgencyLevel === 'URGENT' ? 'error' : model.urgencyLevel === 'HIGH' ? 'warning' : 'info'"
+              :type="model.urgencyLevel === 'CAUTION' ? 'error' : model.urgencyLevel === 'WARNING' ? 'warning' : 'info'"
               size="small"
             >
               {{ urgencyNames[model.urgencyLevel] || model.urgencyLevel }}

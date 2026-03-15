@@ -22,18 +22,16 @@ const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 // 紧急程度配置
-const urgencyColors: Record<string, 'error' | 'warning' | 'info' | 'success'> = {
-  URGENT: 'error',
-  HIGH: 'warning',
-  MEDIUM: 'info',
-  LOW: 'success'
+const urgencyColors: Record<string, 'error' | 'warning' | 'info'> = {
+  CAUTION: 'error',
+  WARNING: 'warning',
+  TIP: 'info'
 };
 
 const urgencyNames: Record<string, string> = {
-  URGENT: '紧急',
-  HIGH: '高',
-  MEDIUM: '中',
-  LOW: '低'
+  CAUTION: '注意',
+  WARNING: '警告',
+  TIP: '提示'
 };
 
 // 计算属性

@@ -27,18 +27,16 @@ import SuggestionSearch from './modules/suggestion-search.vue';
 import SuggestionCard from './modules/suggestion-card.vue';
 
 // ========== 常量定义 ==========
-const urgencyColors: Record<string, 'error' | 'warning' | 'info' | 'success'> = {
-  URGENT: 'error',
-  HIGH: 'warning',
-  MEDIUM: 'info',
-  LOW: 'success'
+const urgencyColors: Record<string, 'error' | 'warning' | 'info'> = {
+  CAUTION: 'error',
+  WARNING: 'warning',
+  TIP: 'info'
 };
 
 const urgencyNames: Record<string, string> = {
-  URGENT: '紧急',
-  HIGH: '高',
-  MEDIUM: '中',
-  LOW: '低'
+  CAUTION: '注意',
+  WARNING: '警告',
+  TIP: '提示'
 };
 
 const suggestionTypeNames: Record<string, string> = {

@@ -4,8 +4,8 @@ declare namespace Api {
     type Suggestion = Common.CommonRecord<{
       /** 关联农田ID */
       farmlandId: CommonType.IdType | null;
-      /** 紧急程度 (URGENT/HIGH/MEDIUM/LOW) */
-      urgencyLevel: string;
+      /** 紧急程度 (CAUTION/WARNING/TIP) */
+      urgencyLevel: 'CAUTION' | 'WARNING' | 'TIP';
       /** 具体建议内容 (包含类型、触发原因、标题、执行窗口、预期效果等) */
       suggestion: string;
       /** 是否被采纳 (0-否, 1-是) */
@@ -21,8 +21,8 @@ declare namespace Api {
       {
         /** 农田ID */
         farmlandId?: CommonType.IdType | null;
-        /** 紧急程度 */
-        urgencyLevel?: string | null;
+        /** 紧急程度 (CAUTION/WARNING/TIP) */
+        urgencyLevel?: 'CAUTION' | 'WARNING' | 'TIP' | null;
       } & Common.CommonSearchParams
     >;
 
@@ -35,8 +35,8 @@ declare namespace Api {
       suggestionType: string;
       /** 建议标题 */
       title: string;
-      /** 紧急程度 */
-      urgencyLevel: string;
+      /** 紧急程度: CAUTION-注意, WARNING-警告, TIP-提示 */
+      urgencyLevel: 'CAUTION' | 'WARNING' | 'TIP';
       /** AI置信度(0-100) */
       confidence: number;
       /** 建议执行时间窗口 */
@@ -56,7 +56,7 @@ declare namespace Api {
       description: string;
     };
 
-    /** 紧急程度枚举项 */
+    /** 紧急程度枚举项: CAUTION-注意, WARNING-警告, TIP-提示 */
     type UrgencyLevelItem = {
       code: string;
       desc: string;

@@ -38,10 +38,9 @@ async function loadFarmlands() {
 
 /** 紧急程度选项 */
 const urgencyLevelOptions = [
-  { label: '紧急', value: 'URGENT' },
-  { label: '高', value: 'HIGH' },
-  { label: '中', value: 'MEDIUM' },
-  { label: '低', value: 'LOW' }
+  { label: '注意', value: 'CAUTION' },
+  { label: '警告', value: 'WARNING' },
+  { label: '提示', value: 'TIP' }
 ];
 
 function resetModel() {
