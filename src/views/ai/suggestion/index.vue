@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import {
   NAlert,
   NButton,
@@ -16,9 +16,10 @@ import {
   NTag
 } from 'naive-ui';
 import {
+  type SSEStreamResult,
+  createSuggestionStream,
+  createUrgentSuggestionsStream,
   fetchAdoptSuggestion,
-  fetchGenerateSuggestion,
-  fetchGenerateUrgentSuggestions,
   fetchGetSuggestionPage
 } from '@/service/api/ai';
 import { fetchGetFarmlandList } from '@/service/api/farming';
@@ -147,6 +148,11 @@ const selectedFarmland = ref<number | null>(null);
 const suggestionResult = ref<Api.Ai.StructuredSuggestion | null>(null);
 const urgentSuggestions = ref<Api.Ai.StructuredSuggestion[]>([]);
 
+const streamingMessages = ref<string[]>([]);
+const streamStatus = ref<string>('');
+
+let cancelStream: (() => void) | null = null;
+
 const canGenerate = computed(() => selectedFarmland.value !== null && !generating.value);
 
 async function loadFarmlands() {
@@ -166,16 +172,30 @@ async function handleGenerate() {
 
   generating.value = true;
   suggestionResult.value = null;
+  streamingMessages.value = [];
+  streamStatus.value = 'connecting';
 
-  const { error, data: suggestionData } = await fetchGenerateSuggestion(selectedFarmland.value);
-
-  generating.value = false;
-
-  if (!error && suggestionData) {
-    suggestionResult.value = suggestionData;
-    window.$message?.success('建议生成成功');
-    getData();
-  }
+  cancelStream = createSuggestionStream(selectedFarmland.value, {
+    suggestionType: 'IRRIGATION',
+    onMessage: (result: SSEStreamResult) => {
+      streamStatus.value = result.status;
+      streamingMessages.value = result.messages;
+      if (result.result) {
+        suggestionResult.value = result.result;
+      }
+    },
+    onError: (error: string) => {
+      window.$message?.error(error);
+      generating.value = false;
+    },
+    onComplete: () => {
+      generating.value = false;
+      if (suggestionResult.value) {
+        window.$message?.success('建议生成成功');
+        getData();
+      }
+    }
+  });
 }
 
 async function handleGenerateUrgent() {
@@ -183,25 +203,47 @@ async function handleGenerateUrgent() {
 
   generating.value = true;
   urgentSuggestions.value = [];
+  streamingMessages.value = [];
+  streamStatus.value = 'connecting';
 
-  const { error, data: urgentData } = await fetchGenerateUrgentSuggestions(selectedFarmland.value);
-
-  generating.value = false;
-
-  if (!error && urgentData) {
-    urgentSuggestions.value = urgentData;
-    if (urgentData.length > 0) {
-      window.$message?.success(`生成了 ${urgentData.length} 条紧急建议`);
-      getData();
-    } else {
-      window.$message?.info('当前没有需要紧急处理的情况');
+  cancelStream = createUrgentSuggestionsStream(selectedFarmland.value, {
+    onMessage: (result: SSEStreamResult) => {
+      streamStatus.value = result.status;
+      streamingMessages.value = result.messages;
+      if (result.urgentResults.length > 0) {
+        urgentSuggestions.value = result.urgentResults;
+      }
+    },
+    onError: (error: string) => {
+      window.$message?.error(error);
+      generating.value = false;
+    },
+    onComplete: () => {
+      generating.value = false;
+      if (urgentSuggestions.value.length > 0) {
+        window.$message?.success(`生成了 ${urgentSuggestions.value.length} 条紧急建议`);
+        getData();
+      } else {
+        window.$message?.info('当前没有需要紧急处理的情况');
+      }
     }
-  }
+  });
 }
 
 function handleClearResult() {
   suggestionResult.value = null;
   urgentSuggestions.value = [];
+  streamingMessages.value = [];
+  streamStatus.value = '';
+}
+
+function handleCancelGenerate() {
+  if (cancelStream) {
+    cancelStream();
+    cancelStream = null;
+  }
+  generating.value = false;
+  streamStatus.value = '';
 }
 
 // ========== 初始化 ==========
@@ -211,6 +253,10 @@ onMounted(() => {
     generateLoading.value = false;
     getData();
   });
+});
+
+onUnmounted(() => {
+  handleCancelGenerate();
 });
 </script>
 
@@ -252,6 +298,8 @@ onMounted(() => {
                 生成紧急建议
               </NButton>
 
+              <NButton v-if="generating" type="error" @click="handleCancelGenerate">取消</NButton>
+
               <NButton v-if="suggestionResult || urgentSuggestions.length > 0" @click="handleClearResult">
                 清空结果
               </NButton>
@@ -259,6 +307,28 @@ onMounted(() => {
           </NSpace>
         </NSpace>
       </NSpin>
+    </NCard>
+
+    <!-- SSE流式进度显示 -->
+    <NCard
+      v-if="generating || streamingMessages.length > 0"
+      title="AI处理中"
+      :bordered="false"
+      size="small"
+      class="flex-shrink-0"
+    >
+      <NSpace vertical>
+        <NAlert v-if="streamStatus === 'connecting'" type="info">正在连接AI服务...</NAlert>
+        <NAlert v-else-if="streamStatus === 'aggregating'" type="info">正在聚合农田数据...</NAlert>
+        <NAlert v-else-if="streamStatus === 'generating'" type="info">AI正在生成建议，请耐心等待...</NAlert>
+        <NAlert v-else-if="streamStatus === 'checking'" type="info">正在检查紧急情况...</NAlert>
+
+        <div v-if="streamingMessages.length > 0" class="max-h-200px overflow-y-auto rounded-8px bg-gray-50 p-12px">
+          <div v-for="(msg, index) in streamingMessages" :key="index" class="text-sm text-gray-600">
+            {{ msg }}
+          </div>
+        </div>
+      </NSpace>
     </NCard>
 
     <!-- 生成的建议结果 -->
