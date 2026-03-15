@@ -12,6 +12,7 @@ import {
 import { fetchGetUserList } from '@/service/api/system';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { $t } from '@/locales';
+import ImageUpload from '@/components/custom/image-upload.vue';
 
 defineOptions({
   name: 'FarmingLogOperateDrawer'
@@ -307,12 +308,7 @@ onMounted(() => {
             />
           </NFormItem>
           <NFormItem label="相关图片" path="images">
-            <NInput
-              v-model:value="model.images"
-              type="textarea"
-              placeholder="请输入图片链接，多个用逗号分隔"
-              :autosize="{ minRows: 2, maxRows: 3 }"
-            />
+            <ImageUpload v-model:value="model.images" :max-count="9" />
           </NFormItem>
         </NForm>
       </NSpin>

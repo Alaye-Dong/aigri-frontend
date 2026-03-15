@@ -28,6 +28,8 @@ declare namespace Env {
     readonly VITE_ICON_LOCAL_PREFIX: 'icon-local';
     /** backend service base url */
     readonly VITE_SERVICE_BASE_URL: string;
+    /** static resource base url (for uploaded files) */
+    readonly VITE_STATIC_BASE_URL?: string;
     /**
      * success code of backend service
      *
