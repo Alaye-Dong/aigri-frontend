@@ -18,7 +18,6 @@ import {
 import {
   type SSEStreamResult,
   createSuggestionStream,
-  createUrgentSuggestionsStream,
   fetchAdoptSuggestion,
   fetchGetSuggestionPage
 } from '@/service/api/ai';
@@ -38,13 +37,6 @@ const urgencyNames: Record<string, string> = {
   CAUTION: '注意',
   WARNING: '警告',
   TIP: '提示'
-};
-
-const suggestionTypeNames: Record<string, string> = {
-  IRRIGATION: '灌溉建议',
-  FERTILIZATION: '施肥建议',
-  DISASTER_PREVENTION: '防灾建议',
-  GENERAL: '通用建议'
 };
 
 // ========== 建议记录相关 ==========
@@ -146,7 +138,6 @@ const farmlandOptions = ref<{ label: string; value: number }[]>([]);
 const selectedFarmland = ref<number | null>(null);
 
 const suggestionResult = ref<Api.Ai.StructuredSuggestion | null>(null);
-const urgentSuggestions = ref<Api.Ai.StructuredSuggestion[]>([]);
 
 const streamingMessages = ref<string[]>([]);
 const streamStatus = ref<string>('');
@@ -176,7 +167,6 @@ async function handleGenerate() {
   streamStatus.value = 'connecting';
 
   cancelStream = createSuggestionStream(selectedFarmland.value, {
-    suggestionType: 'IRRIGATION',
     onMessage: (result: SSEStreamResult) => {
       streamStatus.value = result.status;
       streamingMessages.value = result.messages;
@@ -198,41 +188,8 @@ async function handleGenerate() {
   });
 }
 
-async function handleGenerateUrgent() {
-  if (!selectedFarmland.value) return;
-
-  generating.value = true;
-  urgentSuggestions.value = [];
-  streamingMessages.value = [];
-  streamStatus.value = 'connecting';
-
-  cancelStream = createUrgentSuggestionsStream(selectedFarmland.value, {
-    onMessage: (result: SSEStreamResult) => {
-      streamStatus.value = result.status;
-      streamingMessages.value = result.messages;
-      if (result.urgentResults.length > 0) {
-        urgentSuggestions.value = result.urgentResults;
-      }
-    },
-    onError: (error: string) => {
-      window.$message?.error(error);
-      generating.value = false;
-    },
-    onComplete: () => {
-      generating.value = false;
-      if (urgentSuggestions.value.length > 0) {
-        window.$message?.success(`生成了 ${urgentSuggestions.value.length} 条紧急建议`);
-        getData();
-      } else {
-        window.$message?.info('当前没有需要紧急处理的情况');
-      }
-    }
-  });
-}
-
 function handleClearResult() {
   suggestionResult.value = null;
-  urgentSuggestions.value = [];
   streamingMessages.value = [];
   streamStatus.value = '';
 }
@@ -291,18 +248,9 @@ onUnmounted(() => {
                 生成建议
               </NButton>
 
-              <NButton type="warning" :disabled="!canGenerate" :loading="generating" @click="handleGenerateUrgent">
-                <template #icon>
-                  <icon-mdi-alert-outline />
-                </template>
-                生成紧急建议
-              </NButton>
-
               <NButton v-if="generating" type="error" @click="handleCancelGenerate">取消</NButton>
 
-              <NButton v-if="suggestionResult || urgentSuggestions.length > 0" @click="handleClearResult">
-                清空结果
-              </NButton>
+              <NButton v-if="suggestionResult" @click="handleClearResult">清空结果</NButton>
             </NSpace>
           </NSpace>
         </NSpace>
@@ -337,9 +285,6 @@ onUnmounted(() => {
         <NSpace align="center">
           <NTag :type="urgencyColors[suggestionResult.urgencyLevel] || 'info'" size="small">
             {{ urgencyNames[suggestionResult.urgencyLevel] || suggestionResult.urgencyLevel }}
-          </NTag>
-          <NTag v-if="suggestionResult.suggestionType" type="primary" size="small">
-            {{ suggestionTypeNames[suggestionResult.suggestionType] || suggestionResult.suggestionType }}
           </NTag>
         </NSpace>
       </template>
@@ -379,60 +324,6 @@ onUnmounted(() => {
             {{ suggestionResult.suggestion }}
           </div>
         </NCard>
-      </NSpace>
-    </NCard>
-
-    <!-- 紧急建议列表 -->
-    <NCard
-      v-if="urgentSuggestions.length > 0"
-      title="紧急建议"
-      :bordered="false"
-      size="small"
-      class="max-h-300px flex-shrink-0 overflow-y-auto"
-    >
-      <NSpace vertical size="large">
-        <NAlert type="warning" title="紧急提醒">以下建议需要您尽快处理，以避免可能的损失。</NAlert>
-
-        <div
-          v-for="(suggestion, index) in urgentSuggestions"
-          :key="index"
-          class="border border-gray-200 rounded-8px p-16px transition-colors hover:border-primary"
-        >
-          <NSpace vertical size="small">
-            <div class="flex items-center justify-between">
-              <NSpace align="center">
-                <NTag :type="urgencyColors[suggestion.urgencyLevel] || 'warning'" size="small">
-                  {{ urgencyNames[suggestion.urgencyLevel] || suggestion.urgencyLevel }}
-                </NTag>
-                <NTag v-if="suggestion.suggestionType" type="primary" size="small">
-                  {{ suggestionTypeNames[suggestion.suggestionType] || suggestion.suggestionType }}
-                </NTag>
-                <span class="font-medium">{{ suggestion.title }}</span>
-              </NSpace>
-              <NProgress type="circle" :percentage="suggestion.confidence || 0" :stroke-width="12" :width="36" />
-            </div>
-
-            <div class="text-sm text-gray-600">
-              <strong>触发原因:</strong>
-              {{ suggestion.triggerReason }}
-            </div>
-
-            <div class="whitespace-pre-wrap text-gray-700">
-              {{ suggestion.suggestion }}
-            </div>
-
-            <div class="flex gap-16px text-sm text-gray-500">
-              <span>
-                <strong>执行窗口:</strong>
-                {{ suggestion.actionWindow }}
-              </span>
-              <span>
-                <strong>预期效果:</strong>
-                {{ suggestion.expectedEffect }}
-              </span>
-            </div>
-          </NSpace>
-        </div>
       </NSpace>
     </NCard>
 

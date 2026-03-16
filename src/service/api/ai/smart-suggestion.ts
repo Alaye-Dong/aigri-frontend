@@ -12,13 +12,6 @@ function getSSEBaseUrl(): string {
   return baseURL;
 }
 
-export function fetchSuggestionTypes() {
-  return request<Api.Ai.SuggestionTypeItem[]>({
-    url: '/ai/proactive-suggestion/types',
-    method: 'get'
-  });
-}
-
 export function fetchUrgencyLevels() {
   return request<Api.Ai.UrgencyLevelItem[]>({
     url: '/ai/proactive-suggestion/urgency-levels',
@@ -26,27 +19,19 @@ export function fetchUrgencyLevels() {
   });
 }
 
-export function fetchGenerateSuggestion(farmlandId: number, suggestionType?: string) {
+export function fetchGenerateSuggestion(farmlandId: number) {
   return request<Api.Ai.StructuredSuggestion>({
     url: '/ai/proactive-suggestion/generate',
-    method: 'post',
-    params: { farmlandId, suggestionType }
-  });
-}
-
-export function fetchGenerateUrgentSuggestions(farmlandId: number) {
-  return request<Api.Ai.StructuredSuggestion[]>({
-    url: '/ai/proactive-suggestion/generate-urgent',
     method: 'post',
     params: { farmlandId }
   });
 }
 
-export function fetchGenerateAndPushSuggestion(farmlandId: number, suggestionType: string) {
+export function fetchGenerateAndPushSuggestion(farmlandId: number) {
   return request<void>({
     url: '/ai/proactive-suggestion/generate-and-push',
     method: 'post',
-    params: { farmlandId, suggestionType }
+    params: { farmlandId }
   });
 }
 
@@ -95,10 +80,9 @@ export function fetchCleanupSuggestions(days: number = 30) {
 }
 
 export interface SSEStreamResult {
-  status: 'connecting' | 'aggregating' | 'generating' | 'checking' | 'completed' | 'error';
+  status: 'connecting' | 'aggregating' | 'generating' | 'completed' | 'error';
   messages: string[];
   result: Api.Ai.StructuredSuggestion | null;
-  urgentResults: Api.Ai.StructuredSuggestion[];
 }
 
 export type SSEMessageHandler = (data: SSEStreamResult) => void;
@@ -107,10 +91,6 @@ export interface SSEStreamOptions {
   onMessage: SSEMessageHandler;
   onError?: (error: string) => void;
   onComplete?: () => void;
-}
-
-export interface SuggestionStreamOptions extends SSEStreamOptions {
-  suggestionType?: string;
 }
 
 interface StreamContext {
@@ -166,45 +146,6 @@ function handleSuggestionMessage(data: string, ctx: StreamContext): boolean {
   return false;
 }
 
-function handleUrgentMessage(data: string, ctx: StreamContext): boolean {
-  if (data === '[DONE]') {
-    ctx.result.status = 'completed';
-    ctx.onMessage(ctx.result);
-    ctx.onComplete?.();
-    return true;
-  }
-
-  if (data.startsWith('[URGENT_')) {
-    const jsonData = data.replace(/^\[URGENT_\d+\]/, '');
-    try {
-      const urgent = JSON.parse(jsonData) as Api.Ai.StructuredSuggestion;
-      ctx.result.urgentResults.push(urgent);
-    } catch {
-      /* empty */
-    }
-    ctx.onMessage(ctx.result);
-    return false;
-  }
-
-  try {
-    const parsed = JSON.parse(data);
-    if (parsed.status) {
-      ctx.result.status = parsed.status;
-    }
-    if (parsed.message) {
-      ctx.result.messages.push(parsed.message);
-    }
-    if (parsed.count !== undefined) {
-      ctx.result.messages.push(`发现 ${parsed.count} 条紧急建议`);
-    }
-  } catch {
-    ctx.result.messages.push(data);
-  }
-
-  ctx.onMessage(ctx.result);
-  return false;
-}
-
 interface ReadStreamOptions {
   reader: ReadableStreamDefaultReader<Uint8Array>;
   ctx: StreamContext;
@@ -237,17 +178,16 @@ async function readStream(options: ReadStreamOptions): Promise<void> {
   }
 }
 
-export function createSuggestionStream(farmlandId: number, options: SuggestionStreamOptions): () => void {
-  const { onMessage, onError, onComplete, suggestionType = 'IRRIGATION' } = options;
+export function createSuggestionStream(farmlandId: number, options: SSEStreamOptions): () => void {
+  const { onMessage, onError, onComplete } = options;
   const sseBaseUrl = getSSEBaseUrl();
   const token = getToken();
-  const url = `${sseBaseUrl}/ai/proactive-suggestion/generate-stream?farmlandId=${farmlandId}&suggestionType=${suggestionType}`;
+  const url = `${sseBaseUrl}/ai/proactive-suggestion/generate-stream?farmlandId=${farmlandId}`;
 
   const result: SSEStreamResult = {
     status: 'connecting',
     messages: [],
-    result: null,
-    urgentResults: []
+    result: null
   };
 
   const controller = new AbortController();
@@ -283,67 +223,6 @@ export function createSuggestionStream(farmlandId: number, options: SuggestionSt
 
       const ctx: StreamContext = { result, onMessage, onError, onComplete };
       await readStream({ reader, ctx, handleMessage: handleSuggestionMessage, signal: controller.signal });
-    } catch (err) {
-      if (controller.signal.aborted) return;
-      result.status = 'error';
-      onError?.(err instanceof Error ? err.message : '连接失败，请检查网络或重试');
-      onMessage(result);
-    }
-  }
-
-  processStream();
-
-  return () => {
-    controller.abort();
-  };
-}
-
-export function createUrgentSuggestionsStream(farmlandId: number, options: SSEStreamOptions): () => void {
-  const { onMessage, onError, onComplete } = options;
-  const sseBaseUrl = getSSEBaseUrl();
-  const token = getToken();
-  const url = `${sseBaseUrl}/ai/proactive-suggestion/generate-urgent-stream?farmlandId=${farmlandId}`;
-
-  const result: SSEStreamResult = {
-    status: 'connecting',
-    messages: [],
-    result: null,
-    urgentResults: []
-  };
-
-  const controller = new AbortController();
-
-  async function processStream() {
-    try {
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'text/event-stream'
-        },
-        signal: controller.signal
-      });
-
-      if (!response.ok) {
-        result.status = 'error';
-        onError?.(`请求失败: ${response.status}`);
-        onMessage(result);
-        return;
-      }
-
-      result.status = 'aggregating';
-      onMessage(result);
-
-      const reader = response.body?.getReader();
-      if (!reader) {
-        result.status = 'error';
-        onError?.('无法读取响应流');
-        onMessage(result);
-        return;
-      }
-
-      const ctx: StreamContext = { result, onMessage, onError, onComplete };
-      await readStream({ reader, ctx, handleMessage: handleUrgentMessage, signal: controller.signal });
     } catch (err) {
       if (controller.signal.aborted) return;
       result.status = 'error';
