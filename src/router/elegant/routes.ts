@@ -227,7 +227,8 @@ export const generatedRoutes: GeneratedRoute[] = [
     meta: {
       title: 'system',
       i18nKey: 'route.system',
-      icon: 'carbon:cloud-service-management'
+      icon: 'carbon:cloud-service-management',
+      roles: ['admin']
     },
     children: [
       {
