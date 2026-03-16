@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import { fetchGetAlertLogList } from '@/service/api/env/alert-log';
+import { fetchDeviceStatusDistribution } from '@/service/api/dashboard';
 import { useEcharts } from '@/hooks/common/echarts';
 
 defineOptions({
   name: 'PieChart'
 });
 
-// Hardcoded Chinese text for chart labels
-const CHART_TITLE = '告警分布';
+const CHART_TITLE = '设备状态分布';
 const LABELS = {
-  info: '提示',
-  warning: '警告',
-  danger: '严重'
+  online: '在线',
+  offline: '离线',
+  fault: '故障',
+  maintenance: '维护中'
 };
 
 const { domRef, updateOptions } = useEcharts(() => ({
@@ -29,7 +29,7 @@ const { domRef, updateOptions } = useEcharts(() => ({
   },
   series: [
     {
-      color: ['#3b82f6', '#f59e0b', '#ef4444'],
+      color: ['#22c55e', '#9ca3af', '#ef4444', '#f97316'],
       name: CHART_TITLE,
       type: 'pie',
       radius: ['45%', '75%'],
@@ -58,50 +58,17 @@ const { domRef, updateOptions } = useEcharts(() => ({
   ]
 }));
 
-interface AlertLogItem {
-  severity: string;
-  [key: string]: unknown;
-}
-
-async function fetchAlertData() {
-  const { error, data } = await fetchGetAlertLogList({
-    current: 1,
-    size: 1000
-  });
-
-  if (error || !data?.records) return { info: 0, warning: 0, danger: 0 };
-
-  const records = data.records as AlertLogItem[];
-
-  const severityCount: Record<string, number> = {
-    info: 0,
-    warning: 0,
-    danger: 0
-  };
-
-  records.forEach(record => {
-    const severity = record.severity?.toLowerCase() || 'info';
-    if (severityCount[severity] !== undefined) {
-      severityCount[severity] += 1;
-    }
-  });
-
-  return severityCount;
-}
-
-function getChartData(severityCount: Record<string, number>) {
-  return [
-    { name: LABELS.info, value: severityCount.info },
-    { name: LABELS.warning, value: severityCount.warning },
-    { name: LABELS.danger, value: severityCount.danger }
-  ];
-}
-
 async function loadData() {
-  const severityCount = await fetchAlertData();
+  const { error, data } = await fetchDeviceStatusDistribution();
+  if (error || !data) return;
 
   updateOptions(opts => {
-    opts.series[0].data = getChartData(severityCount);
+    opts.series[0].data = [
+      { name: LABELS.online, value: data.online },
+      { name: LABELS.offline, value: data.offline },
+      { name: LABELS.fault, value: data.fault },
+      { name: LABELS.maintenance, value: data.maintenance }
+    ];
     opts.series[0].name = CHART_TITLE;
     return opts;
   });

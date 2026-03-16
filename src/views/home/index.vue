@@ -7,6 +7,7 @@ import LineChart from './modules/line-chart.vue';
 import PieChart from './modules/pie-chart.vue';
 import RecentAlerts from './modules/recent-alerts.vue';
 import FarmingActivities from './modules/farming-activities.vue';
+import CostChart from './modules/cost-chart.vue';
 
 const appStore = useAppStore();
 
@@ -44,6 +45,9 @@ const gap = computed(() => (appStore.isMobile ? 0 : 16));
         <FarmingActivities />
       </NGi>
     </NGrid>
+
+    <!-- Cost Analysis -->
+    <CostChart />
   </NSpace>
 </template>
 
