@@ -9,7 +9,6 @@ import {
   NDivider,
   NEmpty,
   NPagination,
-  NProgress,
   NSelect,
   NSpace,
   NSpin,
@@ -290,20 +289,7 @@ onUnmounted(() => {
       </template>
 
       <NSpace vertical size="large">
-        <div class="flex items-center justify-between">
-          <h3 class="m-0 text-lg font-medium">{{ suggestionResult.title }}</h3>
-          <div class="flex items-center gap-8px">
-            <span class="text-sm text-gray-500">AI置信度:</span>
-            <NProgress
-              type="circle"
-              :percentage="suggestionResult.confidence || 0"
-              :stroke-width="16"
-              :show-indicator="true"
-              :color="suggestionResult.confidence && suggestionResult.confidence >= 80 ? '#18a058' : '#2080f0'"
-              :width="48"
-            />
-          </div>
-        </div>
+        <h3 class="m-0 text-lg font-medium">{{ suggestionResult.title }}</h3>
 
         <NDivider class="m-0" />
 

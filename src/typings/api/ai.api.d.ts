@@ -21,7 +21,6 @@ declare namespace Api {
     type StructuredSuggestion = {
       title: string;
       urgencyLevel: 'CAUTION' | 'WARNING' | 'TIP';
-      confidence: number;
       actionWindow: string;
       expectedEffect: string;
       triggerReason: string;
