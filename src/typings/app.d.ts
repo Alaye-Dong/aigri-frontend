@@ -420,17 +420,17 @@ declare namespace App {
             apply: string;
             applySuccess: string;
             [key: string]:
-              | {
-                  name: string;
-                  desc: string;
-                }
-              | string;
+            | {
+              name: string;
+              desc: string;
+            }
+            | string;
           };
         };
         layout: {
           layoutMode: { title: string } & Record<UnionKey.ThemeLayoutMode, string> & {
-              [K in `${UnionKey.ThemeLayoutMode}_detail`]: string;
-            };
+            [K in `${UnionKey.ThemeLayoutMode}_detail`]: string;
+          };
           tab: {
             title: string;
             visible: string;
@@ -599,43 +599,44 @@ declare namespace App {
             basicInfo: string;
             changePassword: string;
           };
-      };
-      form: {
-        required: string;
-        userName: FormMsg;
-        phone: FormMsg;
-        pwd: FormMsg;
-        confirmPwd: FormMsg;
-        code: FormMsg;
-        email: FormMsg;
-      };
-      dropdown: Record<Global.DropdownKey, string>;
-      icon: {
-        themeConfig: string;
-        themeSchema: string;
-        lang: string;
-        fullscreen: string;
-        fullscreenExit: string;
-        reload: string;
-        collapse: string;
-        expand: string;
-        pin: string;
-        unpin: string;
-      };
-      datatable: {
-        itemCount: string;
-        fixed: {
-          left: string;
-          right: string;
-          unFixed: string;
+        };
+        form: {
+          required: string;
+          userName: FormMsg;
+          phone: FormMsg;
+          pwd: FormMsg;
+          confirmPwd: FormMsg;
+          code: FormMsg;
+          email: FormMsg;
+        };
+        dropdown: Record<Global.DropdownKey, string>;
+        icon: {
+          themeConfig: string;
+          themeSchema: string;
+          lang: string;
+          fullscreen: string;
+          fullscreenExit: string;
+          reload: string;
+          collapse: string;
+          expand: string;
+          pin: string;
+          unpin: string;
+        };
+        datatable: {
+          itemCount: string;
+          fixed: {
+            left: string;
+            right: string;
+            unFixed: string;
+          };
         };
       };
-    };
+    }
 
     type GetI18nKey<T extends Record<string, unknown>, K extends keyof T = keyof T> = K extends string
       ? T[K] extends Record<string, unknown>
-        ? `${K}.${GetI18nKey<T[K]>}`
-        : K
+      ? `${K}.${GetI18nKey<T[K]>}`
+      : K
       : never;
 
     type I18nKey = GetI18nKey<Schema>;
