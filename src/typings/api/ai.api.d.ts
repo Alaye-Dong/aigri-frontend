@@ -36,11 +36,11 @@ declare namespace Api {
 
     type ChatHistory = {
       id: number;
-      userId: number;
-      sessionId: string | null;
+      userId?: number;
+      sessionId?: string | null;
       question: string;
       answer: string;
-      contextData: string | null;
+      contextData?: string | null;
       createTime: string;
     };
 
