@@ -100,12 +100,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <NCard :title="CHART_TITLE" :bordered="false" class="card-wrapper">
+  <NCard :title="CHART_TITLE" :bordered="false" size="small" class="card-wrapper">
     <NSpin :show="loading">
-      <div v-if="noData" class="h-320px flex-center">
+      <div v-if="noData" class="h-360px flex-center">
         <NEmpty description="暂无成本数据" />
       </div>
-      <div v-else ref="domRef" class="h-320px overflow-hidden"></div>
+      <div v-else ref="domRef" class="h-360px overflow-hidden"></div>
     </NSpin>
   </NCard>
 </template>

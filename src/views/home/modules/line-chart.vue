@@ -175,7 +175,7 @@ init();
 </script>
 
 <template>
-  <NCard :bordered="false" class="card-wrapper">
+  <NCard title="环境趋势" :bordered="false" size="small" class="card-wrapper">
     <div ref="domRef" class="h-360px overflow-hidden"></div>
   </NCard>
 </template>
