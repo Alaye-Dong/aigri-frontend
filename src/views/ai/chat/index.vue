@@ -40,11 +40,13 @@ async function loadHistory() {
 
     const records = data.records || [];
     if (records.length > 0) {
-      conversationItems.value = [{
-        key: 'default',
-        label: '对话历史',
-        description: `${records.length} 条消息`
-      }];
+      conversationItems.value = [
+        {
+          key: 'default',
+          label: '对话历史',
+          description: `${records.length} 条消息`
+        }
+      ];
 
       const messages: MessageItem[] = [];
       let keyCounter = 0;
@@ -138,11 +140,13 @@ async function handleSend() {
     bubbleListRef.value?.scrollToBottom();
 
     if (conversationItems.value.length === 0) {
-      conversationItems.value = [{
-        key: 'default',
-        label: '对话历史',
-        description: '1 条消息'
-      }];
+      conversationItems.value = [
+        {
+          key: 'default',
+          label: '对话历史',
+          description: '1 条消息'
+        }
+      ];
     } else {
       const count = Math.floor(bubbleItems.value.length / 2);
       conversationItems.value[0].description = `${count} 条消息`;
@@ -169,8 +173,10 @@ onMounted(() => {
 <template>
   <div class="h-full flex overflow-hidden">
     <!-- Sidebar: Chat History -->
-    <div v-if="showSidebar"
-      class="w-64 flex-shrink-0 border-r border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+    <div
+      v-if="showSidebar"
+      class="w-64 flex-shrink-0 border-r border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
+    >
       <div class="flex h-full flex-col">
         <div class="flex items-center justify-between border-b border-gray-200 p-3 dark:border-gray-700">
           <span class="text-sm font-medium">历史记录</span>
@@ -190,7 +196,11 @@ onMounted(() => {
         <NCard class="chat-card flex flex-1 flex-col overflow-hidden">
           <!-- Empty State: Welcome & Prompts -->
           <div v-if="bubbleItems.length === 0" class="flex flex-1 flex-col items-center justify-center px-4 py-8">
-            <Welcome title="你好，我是农业AI助手 🌱" description="我可以帮助您解答种植、病虫害防治、气象等问题" class="mb-8" />
+            <Welcome
+              title="你好，我是农业AI助手 🌱"
+              description="我可以帮助您解答种植、病虫害防治、气象等问题"
+              class="mb-8"
+            />
             <Prompts title="您可以尝试问我：" :items="promptItems" wrap @item-click="handlePromptClick" />
           </div>
 
@@ -208,8 +218,13 @@ onMounted(() => {
 
           <!-- Input Area -->
           <div class="flex-shrink-0 border-t border-gray-100 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
-            <EditorSender ref="senderRef" :loading="loading" :disabled="loading" placeholder="有什么我能帮您的吗？🍀"
-              @submit="handleSend" />
+            <EditorSender
+              ref="senderRef"
+              :loading="loading"
+              :disabled="loading"
+              placeholder="有什么我能帮您的吗？🍀"
+              @submit="handleSend"
+            />
           </div>
         </NCard>
       </div>
