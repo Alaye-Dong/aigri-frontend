@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from 'vue';
 import { NCard, NButton, NCollapse, NCollapseItem, NEmpty, NSpin } from 'naive-ui';
-import { Bubble, BubbleList, EditorSender, Prompts, Welcome } from 'vue-element-plus-x';
+import { BubbleList, EditorSender, Prompts, Welcome } from 'vue-element-plus-x';
 import type { BubbleProps } from 'vue-element-plus-x/types/Bubble';
 import type { PromptsItemsProps } from 'vue-element-plus-x/types/Prompts';
+import { MarkdownRenderer } from 'x-markdown-vue';
+import 'x-markdown-vue/style';
 import { fetchGetChatHistory, fetchClearChatHistory, hookFetchChatStream } from '@/service/api/ai/chat';
+import { useThemeStore } from '@/store/modules/theme';
 
 type MessageItem = BubbleProps & {
   key: number;
@@ -17,6 +20,8 @@ type HistoryGroup = {
   label: string;
   items: { id: number; question: string; answer: string; createTime: string }[];
 };
+
+const themeStore = useThemeStore();
 
 const promptItems: PromptsItemsProps[] = [
   { key: '1', label: '如何提高水稻产量？', description: '种植技巧' },
@@ -69,6 +74,7 @@ const historyGroups = computed<HistoryGroup[]>(() => {
 });
 
 const historyCount = computed(() => historyRecords.value.length);
+const isDark = computed(() => themeStore.darkMode);
 
 async function loadHistory() {
   historyLoading.value = true;
@@ -87,17 +93,13 @@ async function loadHistory() {
           key: keyCounter++,
           role: 'user',
           placement: 'end',
-          isMarkdown: false,
-          content: record.question,
-          noStyle: false
+          content: record.question
         });
         messages.push({
           key: keyCounter++,
           role: 'ai',
           placement: 'start',
-          isMarkdown: true,
-          content: record.answer,
-          noStyle: true
+          content: record.answer
         });
       });
 
@@ -126,17 +128,13 @@ function handleLoadHistoryItem(record: Api.Ai.ChatHistory) {
       key: 0,
       role: 'user',
       placement: 'end',
-      isMarkdown: false,
-      content: record.question,
-      noStyle: false
+      content: record.question
     },
     {
       key: 1,
       role: 'ai',
       placement: 'start',
-      isMarkdown: true,
-      content: record.answer,
-      noStyle: true
+      content: record.answer
     }
   ];
   showHistoryPanel.value = false;
@@ -148,10 +146,8 @@ function addMessage(message: string, isUser: boolean) {
     key: i,
     role: isUser ? 'user' : 'ai',
     placement: isUser ? 'end' : 'start',
-    isMarkdown: !isUser,
     loading: !isUser,
-    content: message || '',
-    noStyle: !isUser
+    content: message || ''
   };
   bubbleItems.value.push(obj);
   return bubbleItems.value[bubbleItems.value.length - 1];
@@ -293,8 +289,18 @@ onMounted(() => {
       <div v-else class="min-h-0 flex-1 overflow-y-auto">
         <BubbleList ref="bubbleListRef" :list="bubbleItems" class="p-4">
           <template #content="{ item }">
-            <Bubble v-if="item.content && item.role === 'ai'" :content="item.content"></Bubble>
-            <div v-if="item.content && item.role === 'user'">
+            <!-- AI Message: Use x-markdown-vue for rich markdown rendering -->
+            <div v-if="item.content && item.role === 'ai'" class="ai-message-content">
+              <MarkdownRenderer
+                :markdown="item.content"
+                :is-dark="isDark"
+                :enable-latex="true"
+                :enable-breaks="true"
+                :show-code-block-header="true"
+              />
+            </div>
+            <!-- User Message: Plain text -->
+            <div v-if="item.content && item.role === 'user'" class="user-message-content">
               {{ item.content }}
             </div>
           </template>
@@ -321,5 +327,14 @@ onMounted(() => {
   flex-direction: column;
   height: 100%;
   padding: 0;
+}
+
+.ai-message-content {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.user-message-content {
+  word-break: break-word;
 }
 </style>
