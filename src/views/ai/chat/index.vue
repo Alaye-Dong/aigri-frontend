@@ -290,7 +290,7 @@ onMounted(() => {
         <BubbleList ref="bubbleListRef" :list="bubbleItems" class="p-4">
           <template #content="{ item }">
             <!-- AI Message: Use x-markdown-vue for rich markdown rendering -->
-            <div v-if="item.content && item.role === 'ai'" class="ai-message-content">
+            <div v-if="item.content && item.role === 'ai'" class="max-w-full overflow-x-auto">
               <MarkdownRenderer
                 :markdown="item.content"
                 :is-dark="isDark"
@@ -300,7 +300,7 @@ onMounted(() => {
               />
             </div>
             <!-- User Message: Plain text -->
-            <div v-if="item.content && item.role === 'user'" class="user-message-content">
+            <div v-if="item.content && item.role === 'user'" class="break-words">
               {{ item.content }}
             </div>
           </template>
@@ -327,14 +327,5 @@ onMounted(() => {
   flex-direction: column;
   height: 100%;
   padding: 0;
-}
-
-.ai-message-content {
-  max-width: 100%;
-  overflow-x: auto;
-}
-
-.user-message-content {
-  word-break: break-word;
 }
 </style>
