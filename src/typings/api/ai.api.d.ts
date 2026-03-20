@@ -33,5 +33,24 @@ declare namespace Api {
       priority: number;
       description: string;
     };
+
+    type ChatHistory = {
+      id: number;
+      userId: number;
+      sessionId: string | null;
+      question: string;
+      answer: string;
+      contextData: string | null;
+      createTime: string;
+    };
+
+    type ChatHistorySearchParams = CommonType.RecordNullable<
+      {
+        current?: number;
+        size?: number;
+      } & Common.CommonSearchParams
+    >;
+
+    type ChatHistoryList = Common.PaginatingQueryRecord<ChatHistory>;
   }
 }
