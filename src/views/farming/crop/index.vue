@@ -4,6 +4,7 @@ import { NButton, NDivider, NTag } from 'naive-ui';
 import { fetchBatchDeleteCrop, fetchGetCropList } from '@/service/api/farming';
 import { defaultTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
 import { $t } from '@/locales';
+import { cropStatusMap } from '@/constants/business';
 import ButtonIcon from '@/components/custom/button-icon.vue';
 import CropOperateDrawer from './modules/crop-operate-drawer.vue';
 import CropSearch from './modules/crop-search.vue';
@@ -73,21 +74,16 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
       align: 'center',
       minWidth: 100,
       render: row => {
-        const statusMap: Record<number, { text: string; type: 'success' | 'warning' | 'error' | 'default' }> = {
-          1: { text: '种植中', type: 'success' },
-          2: { text: '已收获', type: 'warning' },
-          3: { text: '已废弃', type: 'error' }
-        };
-
-        const statusValue = row.status !== null ? (row.status as number) : null;
-        const statusInfo =
-          statusValue !== null && statusMap[statusValue] ? statusMap[statusValue] : { text: '未知', type: 'default' };
-        // FIXME 作物状态显示
-        // return (
-        //   <NTag type={statusInfo.type satisfies 'success' | 'warning' | 'error' | 'default' | 'primary' | 'info' | undefined} size="small">
-        //     {statusInfo.text}
-        //   </NTag>
-        // );
+        const statusValue = row.status as Api.Farming.CropStatus | null;
+        if (statusValue === null) {
+          return <NTag type="default" size="small">未知</NTag>;
+        }
+        const statusInfo = cropStatusMap[statusValue];
+        return (
+          <NTag type={statusInfo.type} size="small">
+            {statusInfo.text}
+          </NTag>
+        );
       }
     },
     {

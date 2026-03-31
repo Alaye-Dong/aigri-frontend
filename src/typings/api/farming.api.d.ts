@@ -1,5 +1,7 @@
 declare namespace Api {
   namespace Farming {
+    /** 作物状态 (1:种植中, 2:已收获, 3:已废弃) */
+    type CropStatus = 1 | 2 | 3;
     /** 农田地块 */
     type Farmland = Common.CommonRecord<{
       /** 地块ID */

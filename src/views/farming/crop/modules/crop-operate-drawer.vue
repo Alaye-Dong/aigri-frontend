@@ -5,6 +5,7 @@ import { useLoading } from '@sa/hooks';
 import { fetchCreateCrop, fetchGetCropInfo, fetchGetFarmlandList, fetchUpdateCrop } from '@/service/api/farming';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { $t } from '@/locales';
+import { cropStatusOptions } from '@/constants/business';
 
 defineOptions({
   name: 'CropOperateDrawer'
@@ -48,13 +49,6 @@ const model = ref<Model>(createDefaultModel());
 
 /** 农田选项 */
 const farmlandOptions = ref<{ label: string; value: CommonType.IdType }[]>([]);
-
-/** 作物状态选项 */
-const cropStatusOptions = [
-  { label: '种植中', value: 1 },
-  { label: '已收获', value: 2 },
-  { label: '已废弃', value: 3 }
-];
 
 function createDefaultModel(): Model {
   return {

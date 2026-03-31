@@ -4,6 +4,7 @@ import { jsonClone } from '@sa/utils';
 import { fetchGetFarmlandList } from '@/service/api/farming';
 import { useNaiveForm } from '@/hooks/common/form';
 import { $t } from '@/locales';
+import { cropStatusOptions } from '@/constants/business';
 
 defineOptions({
   name: 'CropSearch'
@@ -24,13 +25,6 @@ const defaultModel = jsonClone(toRaw(model.value));
 
 /** 农田选项 */
 const farmlandOptions = ref<{ label: string; value: CommonType.IdType }[]>([]);
-
-/** 作物状态选项 */
-const cropStatusOptions = [
-  { label: '种植中', value: 1 },
-  { label: '已收获', value: 2 },
-  { label: '已废弃', value: 3 }
-];
 
 async function getFarmlandOptions() {
   const { error, data } = await fetchGetFarmlandList();
@@ -74,20 +68,10 @@ getFarmlandOptions();
               <NInput v-model:value="model.variety" placeholder="请输入品种" />
             </NFormItemGi>
             <NFormItemGi span="24 s:12 m:6" label="所属农田" path="farmlandId" class="pr-24px">
-              <NSelect
-                v-model:value="model.farmlandId"
-                placeholder="请选择所属农田"
-                :options="farmlandOptions"
-                clearable
-              />
+              <NSelect v-model:value="model.farmlandId" placeholder="请选择所属农田" :options="farmlandOptions" clearable />
             </NFormItemGi>
             <NFormItemGi span="24 s:12 m:6" label="状态" path="status" class="pr-24px">
-              <NSelect
-                v-model:value="model.status"
-                placeholder="请选择作物状态"
-                :options="cropStatusOptions"
-                clearable
-              />
+              <NSelect v-model:value="model.status" placeholder="请选择作物状态" :options="cropStatusOptions" clearable />
             </NFormItemGi>
             <NFormItemGi span="24 s:12 m:12" class="pr-24px">
               <NSpace class="w-full" justify="end">

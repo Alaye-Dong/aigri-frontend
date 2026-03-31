@@ -17,5 +17,8 @@
     "moduleResolution": "node"
   },
   "prettier.enable": false,
-  "unocss.root": ["./"]
+  "unocss.root": [
+    "./"
+  ],
+  "Lingma.PreferredLanguage forCommitMessage": "简体中文"
 }

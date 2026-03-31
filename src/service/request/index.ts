@@ -105,9 +105,20 @@ export const request = createFlatRequest(
       let backendErrorCode = '';
 
       // get backend error message and code
+      // 1. Backend error: HTTP 200 but business code indicates failure
       if (error.code === BACKEND_ERROR_CODE) {
         message = error.response?.data?.msg || message;
         backendErrorCode = String(error.response?.data?.code || '');
+      }
+      // 2. HTTP error (500, 401, 403, etc.): Try to get backend error message
+      else if (error.response?.data) {
+        const data = error.response.data as { msg?: string; message?: string; code?: number | string };
+        message = data.msg || data.message || message;
+        backendErrorCode = String(data.code || '');
+      }
+      // 3. Network error (no response): Show user-friendly message
+      else if (!error.response) {
+        message = '网络连接异常，请检查网络后重试';
       }
 
       // the error message is displayed in the modal
@@ -162,6 +173,11 @@ export const demoRequest = createRequest(
       // show backend error message
       if (error.code === BACKEND_ERROR_CODE) {
         message = error.response?.data?.message || message;
+      } else if (error.response?.data) {
+        const data = error.response.data as { msg?: string; message?: string };
+        message = data.msg || data.message || message;
+      } else if (!error.response) {
+        message = '网络连接异常，请检查网络后重试';
       }
 
       window.$message?.error(message);
