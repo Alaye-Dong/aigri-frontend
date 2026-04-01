@@ -72,3 +72,17 @@ export function fetchCostDistribution() {
     method: 'get'
   });
 }
+
+/** 成本趋势项 */
+export interface CostTrendItem {
+  month: string;
+  totalCost: number;
+}
+
+/** 获取成本趋势统计 */
+export function fetchCostTrend() {
+  return request<CostTrendItem[]>({
+    url: '/dashboard/costTrend',
+    method: 'get'
+  });
+}

@@ -1,24 +1,28 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import { fetchDeviceStatusDistribution } from '@/service/api/dashboard';
+import { onMounted, ref } from 'vue';
+import { fetchCostDistribution } from '@/service/api/dashboard';
 import { useEcharts } from '@/hooks/common/echarts';
 
 defineOptions({
   name: 'PieChart'
 });
 
-const CHART_TITLE = '设备状态分布';
-const LABELS = {
-  online: '在线',
-  offline: '离线',
-  fault: '故障',
-  maintenance: '维护中'
+const CHART_TITLE = '成本分布';
+
+const operateTypeColorMap: Record<string, string> = {
+  播种: '#22c55e',
+  施肥: '#84cc16',
+  灌溉: '#3b82f6',
+  除草: '#eab308',
+  病虫害防治: '#ef4444',
+  收获: '#f97316',
+  其他: '#6b7280'
 };
 
 const { domRef, updateOptions } = useEcharts(() => ({
   tooltip: {
     trigger: 'item',
-    formatter: '{b}: {c} ({d}%)'
+    formatter: '{b}: ¥{c} ({d}%)'
   },
   legend: {
     bottom: '1%',
@@ -29,46 +33,48 @@ const { domRef, updateOptions } = useEcharts(() => ({
   },
   series: [
     {
-      color: ['#22c55e', '#9ca3af', '#ef4444', '#f97316'],
       name: CHART_TITLE,
       type: 'pie',
-      radius: ['45%', '75%'],
-      avoidLabelOverlap: false,
+      radius: ['20%', '70%'],
+      center: ['50%', '45%'],
+      roseType: 'area',
       itemStyle: {
-        borderRadius: 10,
-        borderColor: '#fff',
-        borderWidth: 1
+        borderRadius: 6
       },
       label: {
-        show: false,
-        position: 'center'
-      },
-      emphasis: {
-        label: {
-          show: true,
-          fontSize: '14',
-          fontWeight: 'bold'
-        }
+        show: true,
+        formatter: '{b}\n{d}%'
       },
       labelLine: {
-        show: false
+        length: 2,
+        length2: 8
       },
-      data: [] as { name: string; value: number }[]
+      data: [] as { name: string; value: number; itemStyle: { color: string } }[]
     }
   ]
 }));
 
+const loading = ref(true);
+const noData = ref(false);
+
 async function loadData() {
-  const { error, data } = await fetchDeviceStatusDistribution();
-  if (error || !data) return;
+  loading.value = true;
+  noData.value = false;
+
+  const { error, data } = await fetchCostDistribution();
+  loading.value = false;
+
+  if (error || !data?.length) {
+    noData.value = true;
+    return;
+  }
 
   updateOptions(opts => {
-    opts.series[0].data = [
-      { name: LABELS.online, value: data.online },
-      { name: LABELS.offline, value: data.offline },
-      { name: LABELS.fault, value: data.fault },
-      { name: LABELS.maintenance, value: data.maintenance }
-    ];
+    opts.series[0].data = data.map(item => ({
+      name: item.operateType,
+      value: item.totalCost,
+      itemStyle: { color: operateTypeColorMap[item.operateType] || '#6b7280' }
+    }));
     opts.series[0].name = CHART_TITLE;
     return opts;
   });
@@ -80,8 +86,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <NCard title="设备状态" :bordered="false" size="small" class="card-wrapper">
-    <div ref="domRef" class="h-360px overflow-hidden"></div>
+  <NCard title="成本分布" :bordered="false" size="small" class="card-wrapper">
+    <NSpin :show="loading">
+      <div v-if="noData" class="h-360px flex-center">
+        <NEmpty description="暂无成本数据" />
+      </div>
+      <div v-else ref="domRef" class="h-360px overflow-hidden"></div>
+    </NSpin>
   </NCard>
 </template>
 

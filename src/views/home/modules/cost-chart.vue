@@ -1,34 +1,20 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useEcharts } from '@/hooks/common/echarts';
-import { fetchCostDistribution } from '@/service/api/dashboard';
+import { fetchCostTrend } from '@/service/api/dashboard';
 
 defineOptions({
   name: 'CostChart'
 });
 
-const CHART_TITLE = '成本分析';
-
-// Colors from farming-activities.vue
-const operateTypeColorMap: Record<string, string> = {
-  播种: '#22c55e',
-  施肥: '#84cc16',
-  灌溉: '#3b82f6',
-  除草: '#eab308',
-  病虫害防治: '#ef4444',
-  收获: '#f97316',
-  其他: '#6b7280'
-};
+const CHART_TITLE = '成本趋势';
 
 const { domRef, updateOptions } = useEcharts(() => ({
   tooltip: {
     trigger: 'axis',
-    axisPointer: {
-      type: 'shadow'
-    },
     formatter: (params: any) => {
       const item = params[0];
-      return `${item.name}<br/>成本: ¥${item.value.toFixed(2)}`;
+      return `${item.axisValue}<br/>成本: ¥${item.value.toFixed(2)}`;
     }
   },
   grid: {
@@ -39,6 +25,7 @@ const { domRef, updateOptions } = useEcharts(() => ({
   },
   xAxis: {
     type: 'category',
+    boundaryGap: false,
     data: [] as string[],
     axisLabel: {
       interval: 0,
@@ -55,14 +42,31 @@ const { domRef, updateOptions } = useEcharts(() => ({
   series: [
     {
       name: CHART_TITLE,
-      type: 'bar',
-      data: [] as { value: number; itemStyle: { color: string } }[],
-      barWidth: '50%',
-      emphasis: {
-        itemStyle: {
-          shadowBlur: 10,
-          shadowOffsetX: 0,
-          shadowColor: 'rgba(0, 0, 0, 0.5)'
+      type: 'line',
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 8,
+      data: [] as number[],
+      lineStyle: {
+        width: 3,
+        color: '#3b82f6'
+      },
+      itemStyle: {
+        color: '#3b82f6',
+        borderColor: '#fff',
+        borderWidth: 2
+      },
+      areaStyle: {
+        color: {
+          type: 'linear',
+          x: 0,
+          y: 0,
+          x2: 0,
+          y2: 1,
+          colorStops: [
+            { offset: 0, color: 'rgba(59, 130, 246, 0.3)' },
+            { offset: 1, color: 'rgba(59, 130, 246, 0.05)' }
+          ]
         }
       }
     }
@@ -76,7 +80,7 @@ async function loadData() {
   loading.value = true;
   noData.value = false;
 
-  const { error, data } = await fetchCostDistribution();
+  const { error, data } = await fetchCostTrend();
   loading.value = false;
 
   if (error || !data?.length) {
@@ -85,11 +89,8 @@ async function loadData() {
   }
 
   updateOptions(opts => {
-    opts.xAxis.data = data.map(item => item.operateType);
-    opts.series[0].data = data.map(item => ({
-      value: item.totalCost,
-      itemStyle: { color: operateTypeColorMap[item.operateType] || '#6b7280' }
-    }));
+    opts.xAxis.data = data.map(item => item.month);
+    opts.series[0].data = data.map(item => item.totalCost);
     return opts;
   });
 }
@@ -103,7 +104,7 @@ onMounted(() => {
   <NCard :title="CHART_TITLE" :bordered="false" size="small" class="card-wrapper">
     <NSpin :show="loading">
       <div v-if="noData" class="h-360px flex-center">
-        <NEmpty description="暂无成本数据" />
+        <NEmpty description="暂无成本趋势数据" />
       </div>
       <div v-else ref="domRef" class="h-360px overflow-hidden"></div>
     </NSpin>
