@@ -5,7 +5,6 @@ import { useAuthStore } from '@/store/modules/auth';
 import { useRouterPush } from '@/hooks/common/router';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { $t } from '@/locales';
-import { env } from 'node:process';
 
 defineOptions({
   name: 'PwdLogin'
