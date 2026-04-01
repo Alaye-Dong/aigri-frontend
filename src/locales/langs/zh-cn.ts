@@ -310,7 +310,8 @@ const local: App.I18n.Schema = {
         policy: '《隐私权政策》'
       },
       resetPwd: {
-        title: '重置密码'
+        title: '重置密码',
+        contactAdmin: '请联系管理员重置密码'
       },
       bindWeChat: {
         title: '绑定微信'

@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/modules/auth';
 import { useRouterPush } from '@/hooks/common/router';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { $t } from '@/locales';
+import { env } from 'node:process';
 
 defineOptions({
   name: 'PwdLogin'
@@ -72,6 +73,11 @@ const accounts = computed<Account[]>(() => [
 async function handleAccountLogin(account: Account) {
   await authStore.login(account.userName, account.password);
 }
+
+// 添加判断是否为开发环境的方法
+const isDevEnvironment = () => {
+  return import.meta.env.DEV;
+};
 </script>
 
 <template>
@@ -80,12 +86,8 @@ async function handleAccountLogin(account: Account) {
       <NInput v-model:value="model.userName" :placeholder="$t('page.login.common.userNamePlaceholder')" />
     </NFormItem>
     <NFormItem path="password">
-      <NInput
-        v-model:value="model.password"
-        type="password"
-        show-password-on="click"
-        :placeholder="$t('page.login.common.passwordPlaceholder')"
-      />
+      <NInput v-model:value="model.password" type="password" show-password-on="click"
+        :placeholder="$t('page.login.common.passwordPlaceholder')" />
     </NFormItem>
     <NSpace vertical :size="24">
       <div class="flex-y-center justify-between">
@@ -103,16 +105,20 @@ async function handleAccountLogin(account: Account) {
           {{ $t(loginModuleRecord['code-login']) }}
         </NButton>
 -->
-        <NButton class="flex-1" block @click="toggleLoginModule('register')">
+        <!--
+ <NButton class="flex-1" block @click="toggleLoginModule('register')">
           {{ $t(loginModuleRecord.register) }}
         </NButton>
+-->
       </div>
 
-      <NDivider class="text-14px text-red !m-0">测试环境快捷登录 正式环境需要删除</NDivider>
-      <div class="flex-center gap-12px">
-        <NButton v-for="item in accounts" :key="item.key" type="primary" @click="handleAccountLogin(item)">
-          {{ item.label }}
-        </NButton>
+      <div v-if="isDevEnvironment()">
+        <NDivider class="text-14px text-red-200 !m-0">测试环境快捷登录 正式环境将不显示</NDivider>
+        <div class="flex-center gap-12px">
+          <NButton v-for="item in accounts" :key="item.key" type="primary" @click="handleAccountLogin(item)">
+            {{ item.label }}
+          </NButton>
+        </div>
       </div>
     </NSpace>
   </NForm>

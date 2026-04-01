@@ -40,5 +40,11 @@ declare namespace Api {
       newPassword: string;
       confirmPassword: string;
     };
+
+    /** 重置密码参数 */
+    type ResetPasswordParams = {
+      userId: CommonType.IdType;
+      newPassword: string;
+    };
   }
 }

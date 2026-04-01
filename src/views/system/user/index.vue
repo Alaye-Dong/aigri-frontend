@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import { ref } from 'vue';
 import { NAvatar, NDivider, NEllipsis } from 'naive-ui';
-import { fetchBatchDeleteUser, fetchGetUserList, fetchUpdateUserStatus } from '@/service/api/system';
+import { fetchBatchDeleteUser, fetchGetUserList, fetchResetUserPassword, fetchUpdateUserStatus } from '@/service/api/system';
 import { defaultTransform, useNaivePaginatedTable, useTableOperate } from '@/hooks/common/table';
 import { $t } from '@/locales';
 import StatusSwitch from '@/components/custom/status-switch.vue';
@@ -17,6 +17,10 @@ const searchParams = ref<Api.System.UserSearchParams>({
   phone: null,
   status: null
 });
+
+const resetPasswordVisible = ref(false);
+const resetPasswordUserId = ref<CommonType.IdType | null>(null);
+const resetPasswordValue = ref('');
 
 const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagination } = useNaivePaginatedTable({
   api: () => fetchGetUserList(searchParams.value),
@@ -88,7 +92,7 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
       key: 'operate',
       title: $t('common.operate'),
       align: 'center',
-      width: 130,
+      width: 180,
       render: row => {
         if (row.userId === 1) return null;
 
@@ -105,17 +109,18 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
           );
         };
 
-        // const passwordBtn = () => {
-        //   return (
-        //     <ButtonIcon
-        //       text
-        //       type="primary"
-        //       icon="material-symbols:key-vertical-outline"
-        //       tooltipContent="重置密码"
-        //       onClick={() => handleResetPwd(row.userId)}
-        //     />
-        //   );
-        // };
+        const passwordBtn = () => {
+          return (
+            <ButtonIcon
+              text
+              type="warning"
+              icon="material-symbols:key-vertical-outline"
+              tooltipContent="重置密码"
+              onClick={() => handleResetPwd(row.userId)}
+              disabled={row.userId === 1 || row.userId === '1'}
+            />
+          );
+        };
 
         const deleteBtn = () => {
           return (
@@ -133,6 +138,7 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
 
         const buttons = [];
         buttons.push(editBtn());
+        buttons.push(passwordBtn());
         buttons.push(deleteBtn());
 
         return (
@@ -171,6 +177,30 @@ async function edit(userId: CommonType.IdType) {
   handleEdit(userId);
 }
 
+function handleResetPwd(userId: CommonType.IdType) {
+  resetPasswordUserId.value = userId;
+  resetPasswordValue.value = '';
+  resetPasswordVisible.value = true;
+}
+
+async function confirmResetPassword() {
+  if (!resetPasswordValue.value.trim()) {
+    window.$message?.warning('请输入新密码');
+    return;
+  }
+  if (!resetPasswordUserId.value) return;
+
+  const { error } = await fetchResetUserPassword({
+    userId: resetPasswordUserId.value,
+    newPassword: resetPasswordValue.value
+  });
+
+  if (!error) {
+    window.$message?.success('密码重置成功');
+    resetPasswordVisible.value = false;
+  }
+}
+
 const selectedKeys = ref<string[]>([]);
 
 /** 处理状态切换 */
@@ -203,33 +233,26 @@ function handleResetSearch() {
     <UserSearch v-model:model="searchParams" @reset="handleResetSearch" @search="getDataByPage" />
     <NCard title="用户列表" :bordered="false" size="small" class="card-wrapper sm:flex-1-hidden">
       <template #header-extra>
-        <TableHeaderOperation
-          v-model:columns="columnChecks"
-          :disabled-delete="checkedRowKeys.length === 0"
-          :loading="loading"
-          @add="handleAdd"
-          @delete="handleBatchDelete"
-          @refresh="getData"
-        />
+        <TableHeaderOperation v-model:columns="columnChecks" :disabled-delete="checkedRowKeys.length === 0"
+          :loading="loading" @add="handleAdd" @delete="handleBatchDelete" @refresh="getData" />
       </template>
-      <NDataTable
-        v-model:checked-row-keys="checkedRowKeys"
-        :columns="columns"
-        :data="data"
-        size="small"
-        :scroll-x="962"
-        :loading="loading"
-        remote
-        :row-key="row => row.userId"
-        :pagination="mobilePagination"
-        class="sm:h-full"
-      />
-      <UserOperateDrawer
-        v-model:visible="drawerVisible"
-        :operate-type="operateType"
-        :row-data="editingData"
-        @submitted="getDataByPage"
-      />
+      <NDataTable v-model:checked-row-keys="checkedRowKeys" :columns="columns" :data="data" size="small" :scroll-x="962"
+        :loading="loading" remote :row-key="row => row.userId" :pagination="mobilePagination" class="sm:h-full" />
+      <UserOperateDrawer v-model:visible="drawerVisible" :operate-type="operateType" :row-data="editingData"
+        @submitted="getDataByPage" />
+      <NModal v-model:show="resetPasswordVisible" preset="card" title="重置密码" class="w-400px">
+        <NForm>
+          <NFormItem label="新密码">
+            <NInput v-model:value="resetPasswordValue" type="password" show-password-on="click" placeholder="请输入新密码" />
+          </NFormItem>
+        </NForm>
+        <template #footer>
+          <div class="flex justify-end gap-12px">
+            <NButton @click="resetPasswordVisible = false">取消</NButton>
+            <NButton type="primary" @click="confirmResetPassword">确认</NButton>
+          </div>
+        </template>
+      </NModal>
     </NCard>
   </div>
 </template>

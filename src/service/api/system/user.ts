@@ -77,3 +77,12 @@ export function fetchChangePassword(data: Api.System.PasswordChangeParams) {
     data
   });
 }
+
+/** 重置用户密码 */
+export function fetchResetUserPassword(params: Api.System.ResetPasswordParams) {
+  return request<boolean>({
+    url: '/system/user/resetPassword',
+    method: 'put',
+    params
+  });
+}

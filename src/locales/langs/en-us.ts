@@ -314,7 +314,8 @@ const local: App.I18n.Schema = {
         policy: '《Privacy Policy》'
       },
       resetPwd: {
-        title: 'Reset Password'
+        title: 'Reset Password',
+        contactAdmin: 'Please contact admin to reset password'
       },
       bindWeChat: {
         title: 'Bind WeChat'

@@ -546,6 +546,7 @@ declare namespace App {
           };
           resetPwd: {
             title: string;
+            contactAdmin: string;
           };
           bindWeChat: {
             title: string;
