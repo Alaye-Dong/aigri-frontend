@@ -37,8 +37,8 @@ const urgencyNames: Record<string, string> = {
 // 计算属性
 const urgencyColor = computed(() => urgencyColors[props.suggestion.urgencyLevel] || 'info');
 const urgencyName = computed(() => urgencyNames[props.suggestion.urgencyLevel] || props.suggestion.urgencyLevel);
-const isAdopted = computed(() => props.suggestion.isAdopted === 1);
-const isPushed = computed(() => props.suggestion.isPushed === 1);
+const isAdopted = computed(() => Number(props.suggestion.isAdopted) === 1);
+const isPushed = computed(() => Number(props.suggestion.isPushed) === 1);
 
 // 内容展开状态
 const expanded = ref(false);

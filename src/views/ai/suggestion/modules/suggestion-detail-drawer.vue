@@ -102,6 +102,8 @@ async function handleAdopt() {
   const { error } = await fetchAdoptSuggestion(model.value.id);
   if (error) return;
 
+  // 乐观更新本地模型，确保抽屉界面立即反映采纳状态
+  model.value.isAdopted = 1;
   window.$message?.success('采纳成功');
   closeDrawer();
   emit('submitted');
@@ -140,13 +142,13 @@ watch(visible, () => {
             />
           </NFormItem>
           <NFormItem label="采纳状态" path="isAdopted">
-            <NTag :type="model.isAdopted === 1 ? 'success' : 'default'" size="small">
-              {{ model.isAdopted === 1 ? '已采纳' : '未采纳' }}
+            <NTag :type="Number(model.isAdopted) === 1 ? 'success' : 'default'" size="small">
+              {{ Number(model.isAdopted) === 1 ? '已采纳' : '未采纳' }}
             </NTag>
           </NFormItem>
           <NFormItem label="推送状态" path="isPushed">
-            <NTag :type="model.isPushed === 1 ? 'info' : 'default'" size="small">
-              {{ model.isPushed === 1 ? '已推送' : '未推送' }}
+            <NTag :type="Number(model.isPushed) === 1 ? 'info' : 'default'" size="small">
+              {{ Number(model.isPushed) === 1 ? '已推送' : '未推送' }}
             </NTag>
           </NFormItem>
           <NFormItem label="创建时间" path="createTime">
@@ -157,7 +159,7 @@ watch(visible, () => {
       <template #footer>
         <NSpace :size="16">
           <NButton @click="closeDrawer">关闭</NButton>
-          <NButton v-if="model.isAdopted !== 1" type="primary" @click="handleAdopt">采纳建议</NButton>
+          <NButton v-if="Number(model.isAdopted) !== 1" type="primary" @click="handleAdopt">采纳建议</NButton>
         </NSpace>
       </template>
     </NDrawerContent>

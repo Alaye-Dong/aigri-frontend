@@ -126,6 +126,15 @@ async function handleAdopt(id: CommonType.IdType) {
   const { error } = await fetchAdoptSuggestion(id);
   if (error) return;
   window.$message?.success('采纳成功');
+  // 乐观更新本地数据，确保界面立即反映采纳状态
+  const item = data.value.find(d => d.id === id);
+  if (item) {
+    item.isAdopted = 1;
+  }
+  // 同步更新编辑数据，避免抽屉再次打开时显示旧状态
+  if (editingData.value?.id === id) {
+    editingData.value.isAdopted = 1;
+  }
   getData();
 }
 

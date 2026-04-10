@@ -4,8 +4,10 @@ declare namespace Api {
       farmlandId: CommonType.IdType | null;
       urgencyLevel: 'CAUTION' | 'WARNING' | 'TIP';
       suggestion: string;
-      isAdopted: number;
-      isPushed: number;
+      /** 后端返回字符串类型（如 "0"、"1"），前端使用 Number() 转换后比较 */
+      isAdopted: number | string;
+      /** 后端返回字符串类型（如 "0"、"1"），前端使用 Number() 转换后比较 */
+      isPushed: number | string;
       createTime: string;
     }>;
 
